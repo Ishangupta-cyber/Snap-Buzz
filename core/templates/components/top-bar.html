@@ -1,0 +1,39 @@
+
+  <div class="dock-lg flex p-4 justify-between items-center shadow-xs">
+    <div class="flex gap-3">
+      <button
+        class="size-10 rounded-full bg-gray-100 flex items-center justify-center"
+      >
+        <i class="fa-solid fa-user"></i>
+      </button>
+
+      <button class="dock-active size-10 rounded-full bg-gray-100">
+        <a href="{% url 'search-users' %}"> 
+          <i class="text-lg fa-solid fa-magnifying-glass"></i>
+        </a>
+      </button>
+    </div>
+
+    <div class="text-xl font-semibold">Chat</div>
+
+    <div class="flex gap-3">
+      <button
+        class="size-10 rounded-full bg-gray-100 flex items-center justify-center"
+      >
+        <i class="text-lg fa-regular fa-bell"></i>
+      </button>
+
+      <button
+        class="size-10 rounded-full bg-yellow-300 flex items-center justify-center"
+      >
+        <i class="text-lg fa-solid fa-user-plus"></i>
+      </button>
+
+      <button
+        class="size-10 rounded-full bg-gray-100 flex items-center justify-center"
+      >
+        <i class="text-lg fa-solid fa-ellipsis"></i>
+      </button>
+    </div>
+  </div>
+

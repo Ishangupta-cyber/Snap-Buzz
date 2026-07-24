@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block main %}
+<div>
+<div class="dock absolute px-4 gap-4 justify-between top-0 shadow-xs dock-lg">
+    <div class="max-w-[20px]">
+        <a href="{% url 'home' %}" class="cursor-pointer">
+            <i class="fa-solid fa-chevron-down"></i>
+        </a>
+    </div>
+    <form novalidate action="{% url 'search-users' %}" method="get" class="max-w-[500px] w-full">
+        <label class="outline-none flex flex-row h-10 input border-none rounded-full bg-stone-100">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input name="username" type="search" required placeholder="Search" class="pl-2" />
+        </label>
+    </form>
+</div>
+
+<main class="mt-24 px-4">
+    <ul class="space-y-6">
+    {% for user in users %}
+        <li class="flex items-center justify-between">
+            <div class="flex flex-row gap-4">
+                <div class="avatar">
+                    <div class="ring-purple-600 w-10 h-10 rounded-full ring-2 ring-offset-2">
+                        <img  src="https://imgs.search.brave.com/eyRY5uaiLGM5frGLLGO6FeKUxOITJRXh-mf56aSPzWY/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9pbWd2/My5mb3Rvci5jb20v/aW1hZ2VzL2hvbWVw/YWdlLWZlYXR1cmUt/Y2FyZC9mb3Rvci0z/ZC1hdmF0YXIuanBn"
+                class="w-14 h-14 rounded-full border-2 border-purple-500 p-[2px] object-cover" />
+                    </div>
+                </div>
+                <div>
+                    <h2>{{ user.username }}</h2>
+                    <p class="flex flex-row items-center gap-1">
+                        <span class="text-xs text-gray-400">{{ user.username }}</span>
+                    </p>
+                </div>
+            </div>
+            <div>
+            {% if user.id in pending_requests %}
+                <button class="btn btn-sm border-none outline-none rounded-full bg-yellow-300 text-gray-800">
+                    <i class="fa-solid fa-clock"></i>
+                    Pending
+                </button>
+            {% elif user.id not in unique_friends  %}
+                <form action="{% url 'send-invite' user.id %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm border-none outline-none rounded-full bg-purple-600 text-white">
+                        <i class="fa-solid fa-user-plus"></i>
+                        Add Friend
+                    </button>
+                </form>
+            {% else %} 
+            {% endif %}
+            </div>
+        </li>
+    
+    {% endfor %}
+    {% if not users %}
+        <p>No users found.</p>
+    {% endif %}
+
+    </ul>
+</main>
+
+{% endblock %}

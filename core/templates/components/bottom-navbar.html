@@ -1,12 +1,4 @@
-{% extends "base.html" %} {% block content %}
-
-<div class="h-screen bg-gray-900 flex justify-center items-center">
-  <div
-    class="h-full relative bg-white w-full sm:h-[90vh] sm:max-w-96 sm: rounded-lg"
-  >
-    {% block main %} {% endblock %}
-
-    <div class="dock absolute bg-neutral text-neutral-content">
+ <nav class="dock absolute bg-neutral text-neutral-content">
       <button>
         <i class="fa-solid fa-location-dot"></i>
         <span class="dock-label">Map</span>
@@ -25,10 +17,4 @@
         <i class="fa-solid fa-user-group"></i>
         <span class="dock-label">Stories</span>
       </button>
-    </div>
-
-    I
-  </div>
-</div>
-
-{% endblock %}
+    </nav>
