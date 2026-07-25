@@ -4,7 +4,7 @@
 
  <div class="absolute top-0 w-full">
 
-   {% include 'components/top-bar.html'%}
+   {% include 'components/top-bar.html' with fillcontent="Chat" color="yellow"%}
    <div class="space-y-2">
     {% for friend in friends%}
       <a href="{% url 'chat-details' friend.id %}">

@@ -4,7 +4,7 @@
         <span class="dock-label">Map</span>
       </button>
 
-      <button class="dock-active">
+      <button class="{% if request.resolver_match.url_name == 'home' %}dock-active{% endif %}" onclick="window.location.href='{% url 'home' %}'">
         <i class="fa-solid fa-message"></i>
         <span class="dock-label">Chat</span>
       </button>
@@ -13,8 +13,10 @@
         <i class="fa-solid fa-camera"></i>
         <span class="dock-label">Camera</span>
       </button>
-      <button>
+     
+      <button onclick="window.location.href='{% url 'stories' %}'">
         <i class="fa-solid fa-user-group"></i>
         <span class="dock-label">Stories</span>
       </button>
+
     </nav>

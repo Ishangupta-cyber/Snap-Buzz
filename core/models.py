@@ -14,3 +14,10 @@ class FriendRequest(models.Model):
 
   def __str__(self):
     return f"{self.from_user.username} -> {self.to_user.username} ({self.status})"
+
+
+class Message(models.Model):
+  sender=models.ForeignKey(to=User,on_delete=models.CASCADE,related_name="sent_messages")
+  receiver=models.ForeignKey(to=User,on_delete=models.CASCADE,related_name="received_messages")
+  text_message=models.TextField()
+  created_at=models.DateTimeField(auto_now_add=True)

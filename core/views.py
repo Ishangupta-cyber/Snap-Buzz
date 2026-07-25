@@ -4,7 +4,7 @@ from django.views.decorators.http import require_http_methods
 from django.contrib.auth import login,logout,get_user_model
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
-from .models import FriendRequest
+from .models import FriendRequest,Message
 from django.shortcuts import get_object_or_404
 
 # Create your views here.
@@ -46,10 +46,6 @@ def logout_view(request):
   if request.user.is_authenticated:
     logout(request)
   return redirect("login-user")
-
-
-
-
 
 
 
@@ -128,7 +124,25 @@ def send_invite(request, id):
 @login_required
 def chat_details_view(request, id):
     friend = get_object_or_404(get_user_model(), pk=id)
-    return render(request, "pages/chat-details.html", {"friend": friend})
+    print(type(friend))
+    print(type (request.user))
+    if not are_friends(request.user, friend):
+        return redirect("home")
+    messages = Message.objects.filter(
+        Q(sender=request.user, receiver=friend) | Q(sender=friend, receiver=request.user)
+    ).order_by("created_at")
+    
+    return render(request, "pages/chat-details.html", {"friend": friend, "messages": messages})
+
+
+
+def are_friends(user1, user2):
+    return FriendRequest.objects.filter(
+        Q(from_user=user1, to_user=user2) | Q(from_user=user2, to_user=user1),
+        status="accepted"
+    ).exists()
+
+
 
 def accept_invite(request, id):
     friend_request = get_object_or_404(FriendRequest, id=id, to_user=request.user)
@@ -138,11 +152,22 @@ def accept_invite(request, id):
     return redirect("home")
 
 
-  
-
-
 def stories_view(request):
     return render(request, "pages/stories.html")
+
+
+
+@require_http_methods(["POST"])
+@login_required
+def send_message(request,id):
+    if not are_friends(request.user, get_object_or_404(get_user_model(), pk=id)):
+        return redirect("home")
+    
+    receiver = get_object_or_404(get_user_model(), pk=id)
+    content = request.POST.get("content")
+    if content:
+        Message.objects.create(sender=request.user, receiver=receiver, text_message=content)
+    return redirect("chat-details", id=id)
 
 
  
