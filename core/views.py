@@ -132,6 +132,12 @@ def chat_details_view(request, id):
         Q(sender=request.user, receiver=friend) | Q(sender=friend, receiver=request.user)
     ).order_by("created_at")
     
+    messages=list(messages)
+
+    received_messages = Message.objects.filter(receiver=request.user, sender=friend, text_message__isnull=False)
+    received_messages.delete()
+
+  
     return render(request, "pages/chat-details.html", {"friend": friend, "messages": messages})
 
 
@@ -165,8 +171,9 @@ def send_message(request,id):
     
     receiver = get_object_or_404(get_user_model(), pk=id)
     content = request.POST.get("content")
-    if content:
-        Message.objects.create(sender=request.user, receiver=receiver, text_message=content)
+    image=request.FILES.get("image")
+    if content or image:
+        Message.objects.create(sender=request.user, receiver=receiver, text_message=content, image=image)
     return redirect("chat-details", id=id)
 
 

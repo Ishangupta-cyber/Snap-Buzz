@@ -1,6 +1,7 @@
 from django.urls import path
 from . import views
 
+
 urlpatterns=[
   path("",views.home,name="home"),
   path("register/",views.register_view,name="register-user"),
@@ -12,4 +13,5 @@ urlpatterns=[
   path("chat-details/<int:id>", views.chat_details_view, name="chat-details"),
   path("stories/", views.stories_view, name="stories"),
   path("send-message/<int:id>", views.send_message, name="send-message"),
-]
+  # path("send-snap/<int:id>", views.send_snap, name="send-snap"),
+] 
