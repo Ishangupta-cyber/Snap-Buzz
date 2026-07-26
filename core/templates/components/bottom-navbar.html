@@ -1,21 +1,26 @@
  <nav class="dock absolute bg-neutral text-neutral-content">
       <button>
-        <i class="fa-solid fa-location-dot"></i>
+        <i class="ph ph-map-pin text-2xl text-white"></i>
         <span class="dock-label">Map</span>
       </button>
 
       <button class="{% if request.resolver_match.url_name == 'home' %}dock-active{% endif %}" onclick="window.location.href='{% url 'home' %}'">
-        <i class="fa-solid fa-message"></i>
+        <i class="ph ph-chat text-2xl text-white"></i>
         <span class="dock-label">Chat</span>
       </button>
 
       <button>
-        <i class="fa-solid fa-camera"></i>
+        <i class="ph ph-camera text-2xl text-white"></i>
         <span class="dock-label">Camera</span>
       </button>
      
       <button onclick="window.location.href='{% url 'stories' %}'">
-        <i class="fa-solid fa-user-group"></i>
+        <i class="ph ph-user text-2xl text-white"></i>
+        <span class="dock-label">Stories</span>
+      </button>
+
+      <button onclick="window.location.href='{% url 'stories' %}'">
+        <i class="ph ph-play text-2xl text-white"></i>
         <span class="dock-label">Stories</span>
       </button>
 

@@ -1,4 +1,5 @@
 from django.shortcuts import render,redirect
+from django.http import JsonResponse
 from . import forms
 from django.views.decorators.http import require_http_methods
 from django.contrib.auth import login,logout,get_user_model
@@ -15,7 +16,7 @@ def register_view(request):
     return redirect("home")
 
   if request.method == "POST":
-    form = forms.RegisterForm(request.POST)
+    form = forms.RegisterForm(request.POST or None, request.FILES or None)
     if form.is_valid():
       user = form.save()
       login(request, user)
@@ -105,16 +106,16 @@ def search_view(request) :
 @login_required
 def send_invite(request, id):
   if id == request.user.id:
-    return redirect("search-users")
+    return JsonResponse({"status": "error", "message": "Cannot send request to yourself"})
 
   to_user = get_user_model().objects.get(id=id)
-  # if FriendRequest.objects.filter(to_user=to_user, from_user=from_)user=request.user).exists():
 
   if FriendRequest.objects.filter(Q(to_user=to_user, from_user=request.user) | Q(to_user=request.user, from_user=to_user)).exists():
-    return redirect("search-users")
+    return JsonResponse({"status": "error", "message": "Request already exists"})
   else:
     FriendRequest.objects.create(to_user=to_user, from_user=request.user, status="pending")
-    return redirect("search-users")
+
+    return JsonResponse({"status": "success", "message": "Request sent successfully"})
 
 
 @login_required
@@ -154,14 +155,17 @@ def friend_request_list(request):
 @login_required
 @require_http_methods(["POST"])
 def accept_invite(request, id):
-    if are_friends(request.user, get_object_or_404(get_user_model(), pk=id)):
-        return redirect("home")
+    
     friend_request = get_object_or_404(FriendRequest, id=id, to_user=request.user)
+
+    if are_friends(request.user , friend_request.from_user):
+       return JsonResponse({"status":"error","message":"Already friends "})
+
     if friend_request.status == "pending":
         friend_request.status = "accepted"
         friend_request.save()
-        return redirect("friend-requests")
-    return redirect("home")
+        return JsonResponse({"status":"success","message":"Request Accepted "})
+    return JsonResponse({"status":"error","message":"Invalid Request "})
 
 
 def stories_view(request):
@@ -178,8 +182,10 @@ def send_message(request,id):
     receiver = get_object_or_404(get_user_model(), pk=id)
     content = request.POST.get("content")
     image=request.FILES.get("image")
+    print(image)
     if content or image:
         Message.objects.create(sender=request.user, receiver=receiver, text_message=content, image=image)
+        print(image)
     return redirect("chat-details", id=id)
 
 

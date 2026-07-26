@@ -1,37 +1,42 @@
 import random
-
 from faker import Faker
 from django.core.management.base import BaseCommand
-
-from core.models import FriendRequest, Message
+from core.models import SnapUser, FriendRequest, Message
 
 fake = Faker()
 
 
 class Command(BaseCommand):
-
-    help = "Generate messages between accepted friends"
+    help = "Seed messages for gupta"
 
     def handle(self, *args, **kwargs):
 
-        accepted_requests = FriendRequest.objects.filter(status="accepted")
+        gupta = SnapUser.objects.get(username="gupta")
 
-        total_messages = 0
+        friends = FriendRequest.objects.filter(
+            status="accepted"
+        ).filter(
+            from_user=gupta
+        ) | FriendRequest.objects.filter(
+            status="accepted",
+            to_user=gupta
+        )
 
-        for request in accepted_requests:
+        total = 0
 
-            # Har friendship ke beech 15–40 messages
-            for _ in range(random.randint(15, 40)):
+        for fr in friends:
 
-                sender = random.choice(
-                    [request.from_user, request.to_user]
-                )
+            friend = (
+                fr.to_user
+                if fr.from_user == gupta
+                else fr.from_user
+            )
 
-                receiver = (
-                    request.to_user
-                    if sender == request.from_user
-                    else request.from_user
-                )
+            # Har friend ke saath 20-60 messages
+            for _ in range(random.randint(20, 60)):
+
+                sender = random.choice([gupta, friend])
+                receiver = friend if sender == gupta else gupta
 
                 Message.objects.create(
                     sender=sender,
@@ -41,10 +46,8 @@ class Command(BaseCommand):
                     )
                 )
 
-                total_messages += 1
+                total += 1
 
         self.stdout.write(
-            self.style.SUCCESS(
-                f"✅ {total_messages} messages created."
-            )
+            self.style.SUCCESS(f"{total} messages created.")
         )

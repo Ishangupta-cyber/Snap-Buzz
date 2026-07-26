@@ -7,7 +7,7 @@ from django.contrib.auth import get_user_model
 
 
 class SnapUser(AbstractUser) :
-  avatar = models.ImageField(upload_to="avatar", default="avatar/default.jpg")
+  avatar = models.ImageField(upload_to="avatar", default="snaps/default.jpg")
 
 class FriendRequest(models.Model):
   from_user=models.ForeignKey(to=get_user_model(),on_delete=models.CASCADE,related_name="sent_friend_requests")

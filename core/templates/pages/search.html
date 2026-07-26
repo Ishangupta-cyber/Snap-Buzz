@@ -1,7 +1,8 @@
 {% extends "base.html" %}
+{% load static %}
 {% block main %}
-<div>
-<div class="dock absolute px-4 gap-4 justify-between top-0 shadow-xs dock-lg">
+<div class="h-full overflow-y-auto pb-4 relative">
+<div class="dock sticky bg-white z-50 px-4 gap-4 justify-between top-0 pt-4 pb-2 shadow-xs dock-lg">
     <div class="max-w-[20px]">
         <a href="{% url 'home' %}" class="cursor-pointer">
             <i class="fa-solid fa-chevron-down"></i>
@@ -15,7 +16,7 @@
     </form>
 </div>
 
-<main class="mt-24 px-4">
+<main class="mt-4 px-4">
     <ul class="space-y-6">
     {% for user in users %}
         <li class="flex items-center justify-between">
@@ -59,5 +60,7 @@
 
     </ul>
 </main>
+</div>
 
+<script src="{% static 'search.js' %}"></script>
 {% endblock %}

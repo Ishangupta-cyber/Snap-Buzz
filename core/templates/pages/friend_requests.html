@@ -1,25 +1,26 @@
 {% extends "base.html" %}
+{% load static %}
 {% block main %}
-<div>
-<div class="dock absolute px-4 gap-4 justify-between top-0 shadow-xs dock-lg">
+<div class="h-full overflow-y-auto pb-4 relative">
+<div class="dock sticky bg-white z-50 px-4 gap-4 justify-between top-0 pt-4 pb-2 shadow-xs dock-lg">
     <div class="max-w-[20px]">
         <a href="{% url 'home' %}" class="cursor-pointer">
             <i class="fa-solid fa-chevron-down"></i>
         </a>
     </div>
     <div class="text-xl font-semibold">Friend Requests</div>
-    <div class="max-w-[20px]">
+    <div class="max-w-[20px]"></div>
 </div>
 
-<main class="mt-24 px-4">
+<main class="mt-4 px-4">
     <ul class="space-y-6">
     {% for request in friend_requests %}
         <li class="flex items-center justify-between">
             <div class="flex flex-row gap-4">
                 <div class="avatar">
                     <div class="ring-purple-600 w-10 h-10 rounded-full ring-2 ring-offset-2">
-                        <img  src="https://imgs.search.brave.com/eyRY5uaiLGM5frGLLGO6FeKUxOITJRXh-mf56aSPzWY/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9pbWd2/My5mb3Rvci5jb20v/aW1hZ2VzL2hvbWVw/YWdlLWZlYXR1cmUt/Y2FyZC9mb3Rvci0z/ZC1hdmF0YXIuanBn"
-                class="w-14 h-14 rounded-full border-2 border-purple-500 p-[2px] object-cover" />
+                        <img  src=" {{ request.from_user.avatar.url}} "  
+                class="w-14 h-14 rounded-full border-2 border-purple-500 p-[2px] object-cover"/>
                     </div>
                 </div>
                 <div>
@@ -30,7 +31,7 @@
                 </div>
             </div>
             <div>
-            <form action="{% url 'accept-invite' request.from_user.id %}" method="post">
+            <form action="{% url 'accept-invite' request.id %}" method="post">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-sm border-none outline-none rounded-full bg-purple-600 text-white">
                         <i class="fa-solid fa-user-plus"></i>
@@ -41,11 +42,13 @@
         </li>
     
     {% endfor %}
-    {% if not users %}
+    {% if not friend_requests %}
         <p>No friend requests.</p>
     {% endif %}
 
     </ul>
 </main>
+</div>
 
+<script src="{% static 'accept_refresh.js' %}"></script>
 {% endblock %}
