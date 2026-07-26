@@ -4,7 +4,11 @@
       <button
         class="size-10 rounded-full bg-gray-100 flex items-center justify-center"
       >
-        <i class="fa-solid fa-user"></i>
+        <div>
+          <a href="{% url 'home' %}">
+            <img src="{{ request.user.avatar.url }}" alt="Profile" class="size-10 rounded-full">
+          </a>
+        </div>
       </button>
 
       <button class="dock-active size-10 rounded-full bg-gray-100">

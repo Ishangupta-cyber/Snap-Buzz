@@ -7,7 +7,7 @@ from django.db.models import Q
 from .models import FriendRequest,Message
 from django.shortcuts import get_object_or_404
 
-# Create your views here.
+
 @require_http_methods(["GET","POST"])
 def register_view(request):
   if request.user.is_authenticated:
@@ -41,12 +41,10 @@ def login_view(request):
   return render(request,"accounts/login.html",{"form":form})
 
     
-
 def logout_view(request):
   if request.user.is_authenticated:
     logout(request)
   return redirect("login-user")
-
 
 
 @login_required
@@ -62,10 +60,9 @@ def home(request):
       friends.add(friend.from_user)
     else:
       friends.add(friend.to_user)
+  print(request.user.avatar.url)
 
   return render(request,'pages/chat.html',{"friends":friends})
-
-
 
 
 @login_required
@@ -104,7 +101,6 @@ def search_view(request) :
   return render(request, "pages/search.html", {"search_username": search_username, "users": users, "unique_friends": unique_friends,"pending_requests": pending})
 
 
-
 @require_http_methods(["POST"])
 @login_required
 def send_invite(request, id):
@@ -124,20 +120,19 @@ def send_invite(request, id):
 @login_required
 def chat_details_view(request, id):
     friend = get_object_or_404(get_user_model(), pk=id)
-    print(type(friend))
-    print(type (request.user))
+    # print(type(friend))
+    # print(type (request.user))
     if not are_friends(request.user, friend):
         return redirect("home")
     messages = Message.objects.filter(
         Q(sender=request.user, receiver=friend) | Q(sender=friend, receiver=request.user)
     ).order_by("created_at")
-    
+
     messages=list(messages)
 
     received_messages = Message.objects.filter(receiver=request.user, sender=friend, text_message__isnull=False)
     received_messages.delete()
 
-  
     return render(request, "pages/chat-details.html", {"friend": friend, "messages": messages})
 
 
@@ -149,12 +144,23 @@ def are_friends(user1, user2):
     ).exists()
 
 
+@login_required
+@require_http_methods(["GET"])
+def friend_request_list(request):
+    friend_requests = FriendRequest.objects.filter(to_user=request.user, status="pending")
+    return render(request, "pages/friend_requests.html", {"friend_requests": friend_requests})
 
+
+@login_required
+@require_http_methods(["POST"])
 def accept_invite(request, id):
+    if are_friends(request.user, get_object_or_404(get_user_model(), pk=id)):
+        return redirect("home")
     friend_request = get_object_or_404(FriendRequest, id=id, to_user=request.user)
     if friend_request.status == "pending":
         friend_request.status = "accepted"
         friend_request.save()
+        return redirect("friend-requests")
     return redirect("home")
 
 
@@ -177,7 +183,6 @@ def send_message(request,id):
     return redirect("chat-details", id=id)
 
 
- 
 
 
 
