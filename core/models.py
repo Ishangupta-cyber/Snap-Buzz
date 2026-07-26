@@ -28,3 +28,21 @@ class Message(models.Model):
   text_message=models.TextField(blank=True)
   image=models.ImageField(upload_to="snaps/",blank=True,null=True)
   created_at=models.DateTimeField(auto_now_add=True)
+
+
+
+
+class Conversation(models.Model):
+  user1=models.ForeignKey(to=get_user_model(),on_delete=models.CASCADE,related_name="conversations_as_user1")
+  user2=models.ForeignKey(to=get_user_model(),on_delete=models.CASCADE,related_name="conversations_as_user2")
+  last_message=models.ForeignKey(to=Message,on_delete=models.SET_NULL,related_name="+",null=True,blank=True)
+  last_message_preview=models.CharField(blank=True,max_length=100)
+  updated_at=models.DateTimeField(auto_now=True)
+  created_at=models.DateTimeField(auto_now_add=True)
+
+  class Meta:
+    unique_together=("user1","user2")
+    ordering=["-updated_at"]
+
+  def __str__(self):
+    return f"Chat: {self.user1.username} & {self.user2.username}"
