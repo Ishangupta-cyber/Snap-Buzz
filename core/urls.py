@@ -15,6 +15,7 @@ urlpatterns=[
   
   path("chat-details/<int:id>", views.chat_details_view, name="chat-details"),
   path("send-message/<int:id>", views.send_message, name="send-message"),
+  path("mark-snap-opened/<int:id>",views.mark_snap_opened,name="mark-snap-opened"),
 
   path("friend-requests/", views.friend_request_list, name="friend-requests"),
   path("accept-invite/<int:id>", views.accept_invite, name="accept-invite"),

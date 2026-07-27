@@ -20,20 +20,20 @@
     <ul class="space-y-6">
     {% for user in users %}
         <li class="flex items-center justify-between bg-slate-800/50 hover:bg-slate-800 p-3 rounded-2xl border border-slate-700/50 transition-all">
-            <div class="flex flex-row gap-4 items-center">
-                <div class="avatar">
+            <div class="flex flex-row gap-4 items-center flex-1 min-w-0">
+                <div class="avatar shrink-0">
                     <div class="ring-purple-500 w-12 h-12 rounded-full ring-2 ring-offset-2 ring-offset-slate-900">
                         <img src="{{user.avatar.url}}" class="w-full h-full rounded-full object-cover" />
                     </div>
                 </div>
-                <div>
-                    <h2 class="font-bold text-slate-200 text-lg">{{ user.username }}</h2>
+                <div class="flex-1 min-w-0">
+                    <h2 class="font-bold text-slate-200 text-lg truncate">{{ user.username }}</h2>
                     <p class="flex flex-row items-center gap-1">
-                        <span class="text-xs text-slate-400 font-medium">@{{ user.username|lower }}</span>
+                        <span class="text-xs text-slate-400 font-medium truncate">@{{ user.username|lower }}</span>
                     </p>
                 </div>
             </div>
-            <div>
+            <div class="shrink-0 ml-2">
             {% if user.id in pending_requests %}
                 <button class="btn btn-sm border border-yellow-500/30 outline-none rounded-xl bg-yellow-500/10 text-yellow-400 hover:bg-yellow-500/20 transition-colors">
                     <i class="fa-solid fa-clock"></i>

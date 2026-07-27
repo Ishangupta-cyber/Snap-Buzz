@@ -25,6 +25,7 @@ class FriendRequest(models.Model):
 class Message(models.Model):
   sender=models.ForeignKey(to=get_user_model(),on_delete=models.CASCADE,related_name="sent_messages")
   receiver=models.ForeignKey(to=get_user_model(),on_delete=models.CASCADE,related_name="received_messages")
+  is_opened=models.BooleanField(default=False)
   text_message=models.TextField(blank=True)
   image=models.ImageField(upload_to="snaps/",blank=True,null=True)
   created_at=models.DateTimeField(auto_now_add=True)

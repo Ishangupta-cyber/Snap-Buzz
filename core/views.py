@@ -161,7 +161,7 @@ def accept_invite(request, id):
 
         user1,user2=(request.user,friend_request.from_user) if request.user.id<friend_request.from_user.id else (friend_request.from_user,request.user)
 
-        Conversation.objects.create(user1=user1, user2=user2, defaults={"last_message_preview":"You are now friends! Say hi! 👋"})
+        Conversation.objects.update_or_create(user1=user1, user2=user2, defaults={"last_message_preview":"You are now friends! Say hi! 👋"})
       
         return JsonResponse({"status":"success","message":"Request Accepted "})
     return JsonResponse({"status":"error","message":"Invalid Request "})
@@ -185,13 +185,13 @@ def send_message(request,id):
         msg= Message.objects.create(sender=request.user, receiver=receiver, text_message=content, image=image)
 
         if request.user.id<receiver.id:
-           user1,user2=request.user.id,receiver.id
+           user1,user2=request.user,receiver
         else:
-           user1,user2=receiver.id,request.user.id
+           user1,user2=receiver,request.user
         
         preview = "📷 Sent a snap" if image else content[:50]
 
-        Conversation.objects.update_or_create(user1=user1,user2=user2,defaults={"last_message":msg,"last_msg_preview":preview})
+        Conversation.objects.update_or_create(user1=user1,user2=user2,defaults={"last_message":msg,"last_message_preview":preview})
 
     return redirect("chat-details", id=id)
 
@@ -207,3 +207,11 @@ def stories_view(request):
 
 def camera(request):
    return render(request,"pages/camera.html")
+
+def mark_snap_opened(request,id):
+  msg=get_object_or_404(Message,id,receiver=request.user)
+  if msg.image and not msg.is_opened:
+    msg.is_opened=True
+    msg.save()
+    return JsonResponse({"status":"success","message":"Snap marked as Opened"})
+  return JsonResponse({"status":"already_opened","message":"Snap is already opened"})
