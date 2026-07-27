@@ -19,4 +19,5 @@ urlpatterns=[
   path("friend-requests/", views.friend_request_list, name="friend-requests"),
   path("accept-invite/<int:id>", views.accept_invite, name="accept-invite"),
   # path("send-snap/<int:id>", views.send_snap, name="send-snap"),
+  path("camera/",views.camera,name="camera")
 ] 

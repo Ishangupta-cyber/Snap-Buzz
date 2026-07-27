@@ -5,8 +5,9 @@ from django.views.decorators.http import require_http_methods
 from django.contrib.auth import login,logout,get_user_model
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
-from .models import FriendRequest,Message
+from .models import FriendRequest,Message,Conversation
 from django.shortcuts import get_object_or_404
+from .utils import are_friends
 
 
 @require_http_methods(["GET","POST"])
@@ -50,20 +51,18 @@ def logout_view(request):
 
 @login_required
 def home(request):
-  print(request.user)
-  friend_request=FriendRequest.objects.filter(
-    Q(from_user=request.user) | Q(to_user=request.user)
-  ).filter(status="accepted")
 
-  friends=set()
-  for friend in friend_request:
-    if friend.to_user==request.user:
-      friends.add(friend.from_user)
-    else:
-      friends.add(friend.to_user)
-  print(request.user.avatar.url)
+  conversations= Conversation.objects.filter(Q(user1=request.user)|Q(user2=request.user))
+  chat_list=[]
+  for conv in conversations:
+     friend=conv.user2 if request.user==conv.user1 else conv.user1
+     chat_list.append({
+        "friend":friend,
+        'preview': conv.last_message_preview,
+        'time': conv.updated_at
+     })
 
-  return render(request,'pages/chat.html',{"friends":friends})
+  return render(request,'pages/chat.html',{"chat_list":chat_list})
 
 
 @login_required
@@ -138,11 +137,6 @@ def chat_details_view(request, id):
 
 
 
-def are_friends(user1, user2):
-    return FriendRequest.objects.filter(
-        Q(from_user=user1, to_user=user2) | Q(from_user=user2, to_user=user1),
-        status="accepted"
-    ).exists()
 
 
 @login_required
@@ -164,12 +158,15 @@ def accept_invite(request, id):
     if friend_request.status == "pending":
         friend_request.status = "accepted"
         friend_request.save()
+
+        user1,user2=(request.user,friend_request.from_user) if request.user.id<friend_request.from_user.id else (friend_request.from_user,request.user)
+
+        Conversation.objects.create(user1=user1, user2=user2, defaults={"last_message_preview":"You are now friends! Say hi! 👋"})
+      
         return JsonResponse({"status":"success","message":"Request Accepted "})
     return JsonResponse({"status":"error","message":"Invalid Request "})
 
 
-def stories_view(request):
-    return render(request, "pages/stories.html")
 
 
 
@@ -182,10 +179,20 @@ def send_message(request,id):
     receiver = get_object_or_404(get_user_model(), pk=id)
     content = request.POST.get("content")
     image=request.FILES.get("image")
+    
     print(image)
     if content or image:
-        Message.objects.create(sender=request.user, receiver=receiver, text_message=content, image=image)
-        print(image)
+        msg= Message.objects.create(sender=request.user, receiver=receiver, text_message=content, image=image)
+
+        if request.user.id<receiver.id:
+           user1,user2=request.user.id,receiver.id
+        else:
+           user1,user2=receiver.id,request.user.id
+        
+        preview = "📷 Sent a snap" if image else content[:50]
+
+        Conversation.objects.update_or_create(user1=user1,user2=user2,defaults={"last_message":msg,"last_msg_preview":preview})
+
     return redirect("chat-details", id=id)
 
 
@@ -193,3 +200,10 @@ def send_message(request,id):
 
 
 #commit=FALSE matlb chenages abhi save nhi hue hai database mein
+def stories_view(request):
+    return render(request, "pages/stories.html")
+
+
+
+def camera(request):
+   return render(request,"pages/camera.html")

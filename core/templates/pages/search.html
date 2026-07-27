@@ -2,50 +2,49 @@
 {% load static %}
 {% block main %}
 <div class="h-full overflow-y-auto pb-4 relative">
-<div class="dock sticky bg-white z-50 px-4 gap-4 justify-between top-0 pt-4 pb-2 shadow-xs dock-lg">
-    <div class="max-w-[20px]">
-        <a href="{% url 'home' %}" class="cursor-pointer">
-            <i class="fa-solid fa-chevron-down"></i>
+<header class="sticky top-0 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 z-50 px-4 flex justify-between items-center pt-4 pb-3 text-slate-100">
+    <div class="w-8 flex items-center justify-start">
+        <a href="{% url 'home' %}" class="cursor-pointer hover:text-purple-400 transition-colors">
+            <i class="fa-solid fa-chevron-down text-xl"></i>
         </a>
     </div>
-    <form novalidate action="{% url 'search-users' %}" method="get" class="max-w-[500px] w-full">
-        <label class="outline-none flex flex-row h-10 input border-none rounded-full bg-stone-100">
-            <i class="fa-solid fa-magnifying-glass"></i>
-            <input name="username" type="search" required placeholder="Search" class="pl-2" />
+    <form novalidate action="{% url 'search-users' %}" method="get" class="max-w-[500px] w-full px-2">
+        <label class="flex flex-row items-center h-11 px-4 border border-slate-700 rounded-full bg-slate-800 focus-within:ring-2 focus-within:ring-purple-500/50 focus-within:border-purple-500 transition-all text-slate-300">
+            <i class="fa-solid fa-magnifying-glass text-slate-400"></i>
+            <input name="username" type="search" required placeholder="Search users..." class="pl-3 bg-transparent outline-none w-full text-slate-100 placeholder-slate-500" />
         </label>
     </form>
-</div>
+</header>
 
 <main class="mt-4 px-4">
     <ul class="space-y-6">
     {% for user in users %}
-        <li class="flex items-center justify-between">
-            <div class="flex flex-row gap-4">
+        <li class="flex items-center justify-between bg-slate-800/50 hover:bg-slate-800 p-3 rounded-2xl border border-slate-700/50 transition-all">
+            <div class="flex flex-row gap-4 items-center">
                 <div class="avatar">
-                    <div class="ring-purple-600 w-10 h-10 rounded-full ring-2 ring-offset-2">
-                        <img  src="https://imgs.search.brave.com/eyRY5uaiLGM5frGLLGO6FeKUxOITJRXh-mf56aSPzWY/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9pbWd2/My5mb3Rvci5jb20v/aW1hZ2VzL2hvbWVw/YWdlLWZlYXR1cmUt/Y2FyZC9mb3Rvci0z/ZC1hdmF0YXIuanBn"
-                class="w-14 h-14 rounded-full border-2 border-purple-500 p-[2px] object-cover" />
+                    <div class="ring-purple-500 w-12 h-12 rounded-full ring-2 ring-offset-2 ring-offset-slate-900">
+                        <img src="{{user.avatar.url}}" class="w-full h-full rounded-full object-cover" />
                     </div>
                 </div>
                 <div>
-                    <h2>{{ user.username }}</h2>
+                    <h2 class="font-bold text-slate-200 text-lg">{{ user.username }}</h2>
                     <p class="flex flex-row items-center gap-1">
-                        <span class="text-xs text-gray-400">{{ user.username }}</span>
+                        <span class="text-xs text-slate-400 font-medium">@{{ user.username|lower }}</span>
                     </p>
                 </div>
             </div>
             <div>
             {% if user.id in pending_requests %}
-                <button class="btn btn-sm border-none outline-none rounded-full bg-yellow-300 text-gray-800">
+                <button class="btn btn-sm border border-yellow-500/30 outline-none rounded-xl bg-yellow-500/10 text-yellow-400 hover:bg-yellow-500/20 transition-colors">
                     <i class="fa-solid fa-clock"></i>
                     Pending
                 </button>
             {% elif user.id not in unique_friends  %}
                 <form action="{% url 'send-invite' user.id %}" method="post">
                     {% csrf_token %}
-                    <button type="submit" class="btn btn-sm border-none outline-none rounded-full bg-purple-600 text-white">
+                    <button type="submit" class="btn btn-sm border-none outline-none rounded-xl bg-purple-600 hover:bg-purple-500 text-white shadow-[0_0_10px_rgba(168,85,247,0.3)] transition-all">
                         <i class="fa-solid fa-user-plus"></i>
-                        Add Friend
+                        Add
                     </button>
                 </form>
             {% else %} 
@@ -55,7 +54,12 @@
     
     {% endfor %}
     {% if not users %}
-        <p>No users found.</p>
+        <div class="text-center mt-10">
+            <div class="inline-flex items-center justify-center w-16 h-16 bg-slate-800 rounded-full mb-4 ring-1 ring-slate-700 shadow-lg">
+                <i class="fa-solid fa-magnifying-glass text-2xl text-slate-500"></i>
+            </div>
+            <p class="text-slate-400 font-medium">No users found.</p>
+        </div>
     {% endif %}
 
     </ul>

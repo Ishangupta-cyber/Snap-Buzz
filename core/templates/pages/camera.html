@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block main %}
+
+<div class="h-full w-full bg-black flex flex-col justify-between">
+
+    <div class="relative z-10 flex justify-between items-center p-5 text-white text-2xl">
+        <button onclick="goBack()">
+            <i class="fa-solid fa-angle-left"></i>
+        </button>
+
+        <div class="flex gap-5">
+            <i class="fa-solid fa-bolt"></i>
+            <i class="fa-solid fa-gear"></i>
+        </div>
+    </div>
+
+
+    <div class="absolute inset-0">
+        <video
+            id="video"
+            autoplay
+            playsinline
+            class="w-full h-full object-cover">
+        </video>
+    </div>
+
+    <canvas id="canvas" class="hidden"></canvas>
+
+
+    <div class="relative z-10 flex justify-center items-center pb-10">
+
+        <button
+            id="capture"
+            class="size-20 rounded-full border-[8px] border-white bg-white/30 backdrop-blur-md active:scale-95 transition">
+        </button>
+
+    </div>
+
+</div>
+
+{% endblock %}
