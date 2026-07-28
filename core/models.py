@@ -8,6 +8,9 @@ from django.contrib.auth import get_user_model
 
 class SnapUser(AbstractUser) :
   avatar = models.ImageField(upload_to="avatar", default="snaps/default.jpg")
+  latitude = models.FloatField(null=True, blank=True)
+  longitude = models.FloatField(null=True, blank=True)
+  last_location_update = models.DateTimeField(null=True, blank=True)
 
 class FriendRequest(models.Model):
   from_user=models.ForeignKey(to=get_user_model(),on_delete=models.CASCADE,related_name="sent_friend_requests")
@@ -25,7 +28,7 @@ class FriendRequest(models.Model):
 class Message(models.Model):
   sender=models.ForeignKey(to=get_user_model(),on_delete=models.CASCADE,related_name="sent_messages")
   receiver=models.ForeignKey(to=get_user_model(),on_delete=models.CASCADE,related_name="received_messages")
-  is_opened=models.BooleanField(default=False)
+  is_opened=models.BooleanField(default=False)#for snap one time view only 
   text_message=models.TextField(blank=True)
   image=models.ImageField(upload_to="snaps/",blank=True,null=True)
   created_at=models.DateTimeField(auto_now_add=True)
@@ -36,8 +39,17 @@ class Message(models.Model):
 class Conversation(models.Model):
   user1=models.ForeignKey(to=get_user_model(),on_delete=models.CASCADE,related_name="conversations_as_user1")
   user2=models.ForeignKey(to=get_user_model(),on_delete=models.CASCADE,related_name="conversations_as_user2")
+
+  
   last_message=models.ForeignKey(to=Message,on_delete=models.SET_NULL,related_name="+",null=True,blank=True)
   last_message_preview=models.CharField(blank=True,max_length=100)
+
+  streak_count = models.IntegerField(default=0)
+  last_snap_user1 = models.DateTimeField(null=True, blank=True)
+  last_snap_user2 = models.DateTimeField(null=True, blank=True)
+  streak_updated_at = models.DateField(null=True, blank=True)
+
+
   updated_at=models.DateTimeField(auto_now=True)
   created_at=models.DateTimeField(auto_now_add=True)
 

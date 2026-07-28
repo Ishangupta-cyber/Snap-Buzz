@@ -28,6 +28,11 @@
                   <i class="fa-regular fa-message text-xs text-purple-400 shrink-0"></i>
                   <span class="text-slate-300 truncate max-w-[150px] sm:max-w-[200px]">{{ chat.preview }}</span>
                   <span class="text-xs text-slate-500 font-medium shrink-0"> • {{ chat.time|date:"M d" }}</span>
+                  {% if chat.streak_count > 0 %}
+                    <span class="ml-1 font-bold text-orange-500 text-xs shrink-0 flex items-center">
+                        🔥 {{ chat.streak_count }}
+                    </span>
+                  {% endif %}
                 </div>
               </div>
               

@@ -1,5 +1,5 @@
  <nav class="dock absolute bg-slate-900/90 backdrop-blur-xl border-t border-slate-800 text-slate-400 z-50">
-      <button class="hover:text-purple-400 transition-colors">
+      <button class="hover:text-purple-400 transition-colors {% if request.resolver_match.url_name == 'map' %}dock-active{% endif %}" onclick="window.location.href='{% url 'map' %}'">
         <i class="ph ph-map-pin text-2xl text-white"></i>
         <span class="dock-label">Map</span>
       </button>
