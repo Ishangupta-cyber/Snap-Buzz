@@ -111,21 +111,7 @@
     </div>
 
 </main>
-
-<div id="preview-dock"
-    class="dock bg-slate-800/95 backdrop-blur-md border-t border-slate-700 absolute gap-2 px-4 justify-start bottom-[72px] shadow-lg dock-lg hidden z-40">
-
-    <div class="flex flex-row justify-start gap-4 max-w-full w-full items-center">
-        <div id="preview-container" class="w-12 h-12 rounded-md overflow-hidden bg-slate-900 border border-slate-700">
-        </div>
-        <div class="grow flex justify-between flex-row items-center">
-            <p id="caption" class="max-w-[20ch] truncate text-xs font-light text-slate-300">Click the button to watch on Jetflix app.
-            </p>
-            <i class="fa-solid fa-xmark text-slate-400 hover:text-red-400 cursor-pointer transition-colors"></i>
-        </div>
-    </div>
-</div>
-
+# Footer
 <div class="dock absolute gap-2 px-4 justify-start bottom-0 bg-slate-900/90 backdrop-blur-lg border-t border-slate-800 dock-lg z-50">
     <button id="file-button" type="button" class="max-w-10 rounded-full btn btn-square border-none text-purple-400 bg-slate-800 hover:bg-slate-700 hover:text-purple-300 transition-colors shadow-sm">
         <i class="fa-solid fa-camera"></i>
@@ -141,11 +127,89 @@
     </form>
 </div>
 
+
+<div id="preview-dock"
+    class="dock bg-slate-800/95 backdrop-blur-md border-t border-slate-700 absolute gap-2 px-4 justify-start bottom-[72px] shadow-lg dock-lg hidden z-40">
+
+    <div class="flex flex-row justify-start gap-4 max-w-full w-full items-center">
+        <div id="preview-container" class="w-12 h-12 rounded-md overflow-hidden bg-slate-900 border border-slate-700">
+        </div>
+        <div class="grow flex justify-between flex-row items-center">
+            <p id="caption" class="max-w-[20ch] truncate text-xs font-light text-slate-300">Click the button to watch on Jetflix app.
+            </p>
+            <i class="fa-solid fa-xmark text-slate-400 hover:text-red-400 cursor-pointer transition-colors"></i>
+        </div>
+    </div>
+</div>
+
+
 <script>
-    chatbox=document.getElementById("chat-box")
+    const chatbox = document.getElementById("chat-box");
+    const chatInner = chatbox.querySelector('.min-h-full');
+    
     if (chatbox){
         chatbox.scrollTop = chatbox.scrollHeight;   
     }
+
+    // Jin variables ki zaroorat hai unhe Django template se JS me laana
+    const friendId = "{{ friend.id }}";
+    const currentUserId = "{{ request.user.id }}";
+    const currentUsername = "{{ request.user.username }}";
+    const friendUsername = "{{ friend.username }}";
+    
+    // 1. Connection shuru karna
+    const wsScheme = window.location.protocol === "https:" ? "wss" : "ws";
+    const chatSocket = new WebSocket(wsScheme + '://' + window.location.host + '/ws/chat/' + friendId + '/');
+
+    // 2. JAB NAYA MESSAGE AAYEGA (Aapka ya dost ka)
+    chatSocket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        const isMe = (data.sender_id === currentUserId);
+        
+        const alignment = isMe ? 'chat-end' : 'chat-start';
+        const bubbleBg = isMe ? 'bg-purple-600 text-white shadow-[0_0_15px_rgba(168,85,247,0.2)]' : 'bg-slate-800 text-slate-200 border border-slate-700 shadow-md';
+        const senderName = isMe ? currentUsername : friendUsername;
+        
+        const html = `
+        <div class="chat ${alignment} mb-4">
+            <div class="chat-header flex items-center gap-2 mb-1">
+                <span class="font-bold text-slate-200">${senderName}</span>
+                <time class="text-xs font-medium text-slate-500">Just now</time>
+            </div>
+            <div class="chat-bubble ${bubbleBg} break-words leading-relaxed">
+                <p>${data.message}</p>
+            </div>
+            ${isMe ? '<div class="chat-footer text-xs font-semibold text-slate-500 mt-1">Delivered</div>' : ''}
+        </div>
+        `;
+        
+        chatInner.insertAdjacentHTML('beforeend', html);
+        chatbox.scrollTop = chatbox.scrollHeight; 
+    };
+
+    // 3. JAB HUM FORM SUBMIT KAREIN
+    const form = document.querySelector("form[action='{% url 'send-message' friend.id %}']");
+    form.addEventListener('submit', function(e) {
+        const fileInput = document.getElementById('snap-file');
+        const textInput = document.querySelector('input[name="content"]');
+        
+        // Agar Image (photo) upload ho rahi hai toh HTTP ka normal rasta hi behtar hai (return kar jao)
+        if (fileInput && fileInput.files.length > 0) {
+            return; 
+        }
+
+        // Agar text message hai, toh form ko rukwa do taaki page refresh na ho
+        e.preventDefault();
+        const message = textInput.value;
+        
+        if (message.trim() !== "") {
+            // Message ko WebSocket ke through phek do!
+            chatSocket.send(JSON.stringify({
+                'message': message
+            }));
+            textInput.value = ''; // Box khali kar do
+        }
+    });
 </script>
 
 
@@ -167,6 +231,9 @@
 
 
 <script src="{% static 'image_preview.js' %}"></script>
+
+
+
 
 {% endblock %}
 

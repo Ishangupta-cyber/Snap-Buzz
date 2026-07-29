@@ -8,6 +8,8 @@ django = "*"
 pillow = "*"
 faker = "*"
 requests = "*"
+channels = "*"
+daphne = "*"
 
 [dev-packages]
 
