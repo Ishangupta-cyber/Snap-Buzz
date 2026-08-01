@@ -38,8 +38,8 @@ def chat_details_view(request, id):
     messages = list(messages)
 
     # Delete text messages from friend once seen
-    received_messages = Message.objects.filter(receiver=request.user, sender=friend, text_message__isnull=False)
-    received_messages.delete()
+    # received_messages = Message.objects.filter(receiver=request.user, sender=friend, text_message__isnull=False)
+    # received_messages.delete()
 
     user1, user2 = (request.user, friend) if request.user.id < friend.id else (friend, request.user)
     conversation = Conversation.objects.filter(user1=user1, user2=user2).first()

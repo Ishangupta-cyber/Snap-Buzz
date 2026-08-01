@@ -20,7 +20,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     id1, id2 = sorted([self.user.id, int(self.friend_id)])
     self.room_group_name = f'chat_{id1}_{id2}'
-    # 2. User ko is 'Room' me bitha do (Channel Layer / Post Office ki madad se)
+    # 2. User ko is room me bitha do (Channel Layer / Post Office ki madad se)
     await self.channel_layer.group_add(
         self.room_group_name,
         self.channel_name # (Ye current user ki personal connection id hoti hai)
