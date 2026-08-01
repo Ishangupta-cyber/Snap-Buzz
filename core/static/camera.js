@@ -7,6 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const filterBtn = document.getElementById('filter-btn');
     const sendControls = document.getElementById('send-controls');
     const sendSnapBtns = document.querySelectorAll('.send-snap-btn');
+    const addStoryBtn = document.getElementById('add-story-btn');
     const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
     
     let currentStream = null;
@@ -137,6 +138,44 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
+    // Upload to Story via AJAX
+    if (addStoryBtn) {
+        addStoryBtn.addEventListener('click', function() {
+            if (!capturedBlob) return;
+            
+            const formData = new FormData();
+            const fileName = `story_${Date.now()}.jpg`;
+            formData.append('image', capturedBlob, fileName);
+            
+            const originalContent = this.innerHTML;
+            this.innerHTML = '<span class="loading loading-spinner loading-xs mx-auto"></span>';
+            this.disabled = true;
+
+            fetch(`/upload-story/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrfToken
+                },
+                body: formData
+            })
+            .then(response => {
+                if(response.ok) {
+                    window.location.href = `/stories/`;
+                } else {
+                    alert("Failed to upload story.");
+                    this.innerHTML = originalContent;
+                    this.disabled = false;
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert("Network error.");
+                this.innerHTML = originalContent;
+                this.disabled = false;
+            });
+        });
+    }
+
     // Init
-    startCamera();
+    startCamera()
 })

@@ -1,10 +1,36 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
-from core.models import FriendRequest
+from core.models import FriendRequest, Story
+from datetime import timedelta
+from django.utils import timezone
 
+@login_required
 def stories_view(request):
-    return render(request, "pages/stories.html")
+    # Fetch stories from the last 24 hours
+    time_threshold = timezone.now() - timedelta(hours=24)
+    recent_stories = Story.objects.filter(created_at__gte=time_threshold)
+    
+    # Group stories by user so we can display one circle per user
+    user_stories = {}
+    for story in recent_stories:
+        if story.user not in user_stories:
+            user_stories[story.user] = []
+        user_stories[story.user].append(story)
+        
+    return render(request, "pages/stories.html", {"user_stories": user_stories})
+
+from django.http import JsonResponse
+
+@login_required
+def upload_story(request):
+    if request.method == "POST" and request.FILES.get("image"):
+        Story.objects.create(
+            user=request.user,
+            image=request.FILES["image"]
+        )
+        return JsonResponse({"status": "success"})
+    return JsonResponse({"status": "error", "message": "Invalid request"}, status=400)
 
 @login_required
 def camera(request):

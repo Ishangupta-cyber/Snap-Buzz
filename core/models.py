@@ -59,3 +59,15 @@ class Conversation(models.Model):
 
   def __str__(self):
     return f"Chat: {self.user1.username} & {self.user2.username}"
+
+
+class Story(models.Model):
+  user = models.ForeignKey(to=get_user_model(), on_delete=models.CASCADE, related_name="stories")
+  image = models.ImageField(upload_to="stories/")
+  created_at = models.DateTimeField(auto_now_add=True)
+
+  class Meta:
+    ordering = ["-created_at"]
+
+  def __str__(self):
+    return f"Story by {self.user.username} at {self.created_at}"

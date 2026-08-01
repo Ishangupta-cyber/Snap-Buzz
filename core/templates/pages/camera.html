@@ -56,6 +56,18 @@
         
         <div class="p-2 max-h-[60vh] overflow-y-auto">
             {% csrf_token %}
+            
+            <div class="mb-4">
+                <button type="button" id="add-story-btn" class="w-full flex items-center justify-between p-3 bg-purple-600/20 hover:bg-purple-600/40 rounded-xl transition-colors border border-purple-500/50">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-purple-600 flex items-center justify-center text-white">
+                            <i class="fa-solid fa-plus"></i>
+                        </div>
+                        <span class="font-bold text-purple-400">My Story</span>
+                    </div>
+                </button>
+            </div>
+            
             {% if friends %}
                 <ul class="space-y-1">
                 {% for friend in friends %}
@@ -82,6 +94,6 @@
         <button>close</button>
     </form>
 </dialog>
-<script  src="{% static 'camera.js'  %}"  ></script>
+<script  src="{% static 'camera.js' %}?v=1.2"  ></script>
 
 {% endblock %}

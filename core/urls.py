@@ -12,6 +12,7 @@ urlpatterns=[
   path("send-invite/<int:id>", views.send_invite, name="send-invite"), # send friend request
 
   path("stories/", views.stories_view, name="stories"),
+  path("upload-story/", views.upload_story, name="upload-story"),
   
   path("chat-details/<int:id>", views.chat_details_view, name="chat-details"),
   path("send-message/<int:id>", views.send_message, name="send-message"),
