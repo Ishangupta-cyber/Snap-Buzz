@@ -9,23 +9,23 @@ from channels.db import database_sync_to_async
 
 class ChatConsumer(AsyncWebsocketConsumer):
 
-  async def connect(self):
-    self.friend_id=self.scope["url_route"]["kwargs"]["friend_id"]
+    async def connect(self):
+        self.friend_id=self.scope["url_route"]["kwargs"]["friend_id"]
 
-    self.user=self.scope["user"]
+        self.user=self.scope["user"]
 
-    if not self.user.is_authenticated:
-      await self.close()
-      return 
+        if not self.user.is_authenticated:
+            await self.close()
+            return 
 
-    id1, id2 = sorted([self.user.id, int(self.friend_id)])
-    self.room_group_name = f'chat_{id1}_{id2}'
-    # 2. User ko is room me bitha do (Channel Layer / Post Office ki madad se)
-    await self.channel_layer.group_add(
-        self.room_group_name,
-        self.channel_name # (Ye current user ki personal connection id hoti hai)
-    )
-    await self.accept()
+        id1, id2 = sorted([self.user.id, int(self.friend_id)])
+        self.room_group_name = f'chat_{id1}_{id2}'
+        # 2. User ko is room me bitha do (Channel Layer / Post Office ki madad se)
+        await self.channel_layer.group_add(
+            self.room_group_name,
+            self.channel_name # (Ye current user ki personal connection id hoti hai)
+        )
+        await self.accept()
 
     # 2. DISCONNECT FUNCTION
     async def disconnect(self, close_code):
@@ -80,3 +80,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
         
         msg = Message.objects.create(sender=sender, receiver=receiver, text_message=message_text)
         return msg
+
+    async def snap_opened(self, event):
+        message_id = event["message_id"]
+        await self.send(text_data=json.dumps({
+            "type": "snap_opened",
+            "message_id": message_id
+        }))

@@ -8,6 +8,8 @@ from django.utils import timezone
 from datetime import timedelta
 from core.models import Message, Conversation
 from core.utils import are_friends
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
 
 @login_required
 def home(request):
@@ -108,5 +110,28 @@ def mark_snap_opened(request, id):
     if msg.image and not msg.is_opened:
         msg.is_opened = True
         msg.save()
+
+        id1,id2=(request.user.id, msg.sender.id) if request.user.id<msg.sender.id else (msg.sender.id,request.user.id)
+        conversation=Conversation.objects.filter(user1_id=id1,user2_id=id2).first()
+        if conversation and conversation.last_message==msg:
+            conversation.last_message_preview="📷 Opened a snap"
+            conversation.save()
+        room_name=f"chat_{id1}_{id2}"
+        channel_layer=get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            room_name,
+            {
+                
+                "type":"snap_opened",
+                "message_id":msg.id
+
+            }
+        )
+
+
         return JsonResponse({"status": "success", "message": "Snap marked as Opened"})
     return JsonResponse({"status": "already_opened", "message": "Snap is already opened"})
+
+
+# mark_snap_opened --> iska kaam hai ki jab user snap message pe click kare to ye function call ho jaye aur snap ko opened mark kare. Ye function snap message ko retrieve karega aur agar wo image hai aur abhi tak opened nahi hai to usko opened mark karega aur success response return karega. Agar snap already opened hai to already_opened response return karega. 
+

@@ -12,11 +12,13 @@ document.addEventListener("DOMContentLoaded", () => {
             const snapId = this.getAttribute('data-snap-id');
             const snapUrl = this.getAttribute('data-snap-url');
             
-          
+              snapModalImage.src = snapUrl;
+                    snapModal.showModal();
+
             
             
             
-            fetch(`/mark-snap-opened/${snapId}/`, {
+            fetch(`/mark-snap-opened/${snapId}`, {
                 method: 'POST',
                 headers: {
                     'X-CSRFToken': csrfToken,
@@ -27,9 +29,7 @@ document.addEventListener("DOMContentLoaded", () => {
             .then(data => {
                 if(data.status === "success") {
                     
-                    snapModalImage.src = snapUrl;
-                    snapModal.showModal();
-
+                
                     this.classList.remove('snap-trigger', 'cursor-pointer', 'text-slate-100', 'hover:text-white');
                     this.classList.add('text-slate-400');
                     
