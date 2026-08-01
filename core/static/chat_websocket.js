@@ -35,6 +35,32 @@ document.addEventListener("DOMContentLoaded", () => {
         const alignment = isMe ? 'chat-end' : 'chat-start';
         const bubbleBg = isMe ? 'bg-purple-600 text-white shadow-[0_0_15px_rgba(168,85,247,0.2)]' : 'bg-slate-800 text-slate-200 border border-slate-700 shadow-md';
         const senderName = isMe ? currentUsername : friendUsername;
+        let bubbleContent = '';
+                if (data.image_url) {
+            // Agar image bheji gayi hai
+            if (isMe) {
+                bubbleContent = `
+                    <div class="flex items-center gap-2 mb-2 px-1 text-slate-100" data-snap-id="${data.message_id}">
+                        <i class="fa-solid fa-square text-red-500 text-lg"></i>
+                        <span class="font-semibold text-sm">Delivered</span>
+                    </div>`;
+            } else {
+                bubbleContent = `
+                    <div class="snap-trigger cursor-pointer flex items-center gap-2 mb-2 px-1 text-slate-100 hover:text-white transition-colors" 
+                        data-snap-id="${data.message_id}" 
+                        data-snap-url="${data.image_url}"
+                        onclick="window.location.reload();"> <!-- Temporary click handler for new snap -->
+                        <i class="fa-solid fa-square text-red-500 text-lg snap-icon drop-shadow-[0_0_8px_rgba(239,68,68,0.5)]"></i>
+                        <span class="font-bold text-sm snap-text">New Snap</span>
+                    </div>`;
+            }
+        }
+        
+        // Text bhi lagao agar sath me text bheja hai (ya sirf text message hai)
+        if (data.message) {
+            bubbleContent += `<p>${data.message}</p>`;
+        }
+        
         
         const html = `
         <div class="chat ${alignment} mb-4">
@@ -57,19 +83,30 @@ document.addEventListener("DOMContentLoaded", () => {
     const form = document.querySelector(`form[action='${sendUrl}']`);
     if (form) {
         form.addEventListener('submit', function(e) {
+            e.preventDefault()
             const fileInput = document.getElementById('snap-file');
             const textInput = document.querySelector('input[name="content"]');
-            
-            // Agar Image (photo) upload ho rahi hai toh HTTP ka normal rasta hi behtar hai (return kar jao)
-            if (fileInput && fileInput.files.length > 0) {
-                return; 
-            }
-
-            // Agar text message hai, toh form ko rukwa do taaki page refresh na ho
-            e.preventDefault();
             const message = textInput.value;
             
-            if (message.trim() !== "") {
+            if (fileInput && fileInput.files.length > 0) {
+                const formData=new FormData(form)
+            
+            fetch(sendUrl,{
+                method:"POST",
+                body:formData
+            })
+            .then(response=>response.json())
+            .then(data=>{
+                    form.reset();
+                    const dock = document.getElementById('preview-dock');
+                    if(dock) dock.style.display = 'none';
+                })
+                .catch(err => console.error("Upload Error:", err));
+            }
+        
+
+            
+            else if (message.trim() !== "") {
                 // Message ko WebSocket ke through phek do!
                 chatSocket.send(JSON.stringify({
                     'message': message

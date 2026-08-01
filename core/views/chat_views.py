@@ -11,6 +11,7 @@ from core.utils import are_friends
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 
+
 @login_required
 def home(request):
     conversations = Conversation.objects.filter(Q(user1=request.user) | Q(user2=request.user))
@@ -100,7 +101,24 @@ def send_message(request, id):
         conv.last_message_preview = preview
         conv.save()
 
-    return redirect("chat-details", id=id)
+        id1,id2=sorted([request.user.id,receiver.id])
+        room_name=f"chat_{id1}_{id2}"
+        image_url=msg.image.url if msg.image else None
+
+        channel_layer=get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            room_name,
+            {
+                "type":"chat_message",
+                "message":content,
+                "sender_id":request.user.id,
+                "message_id":msg.id,
+                "image_url":image_url
+            }
+        )
+        return JsonResponse({"status": "success", "message": "Message sent!"})
+
+    return JsonResponse({"status": "failed", "message": "Nothing to send"})
 
 
 @require_http_methods(["POST"])
@@ -121,7 +139,7 @@ def mark_snap_opened(request, id):
         async_to_sync(channel_layer.group_send)(
             room_name,
             {
-                
+
                 "type":"snap_opened",
                 "message_id":msg.id
 

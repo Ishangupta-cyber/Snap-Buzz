@@ -87,3 +87,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
             "type": "snap_opened",
             "message_id": message_id
         }))
+
+    async def chat_message(self, event):
+        # View ya doosri jagah se jo group_send hua, wo 'event' ban kar yahan aata hai
+        await self.send(text_data=json.dumps({
+            'message': event.get('message', ''),
+            'sender_id': event['sender_id'],
+            'message_id': event['message_id'],
+           
+            'image_url': event.get('image_url')
+        }))
