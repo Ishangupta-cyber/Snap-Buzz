@@ -69,7 +69,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <time class="text-xs font-medium text-slate-500">Just now</time>
             </div>
             <div class="chat-bubble ${bubbleBg} break-words leading-relaxed">
-                <p>${data.message}</p>
+                ${bubbleContent}
             </div>
             ${isMe ? '<div class="chat-footer text-xs font-semibold text-slate-500 mt-1">Delivered</div>' : ''}
         </div>
@@ -105,13 +105,19 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         
 
-            
             else if (message.trim() !== "") {
-                // Message ko WebSocket ke through phek do!
-                chatSocket.send(JSON.stringify({
-                    'message': message
-                }));
-                textInput.value = ''; // Box khali kar do
+                // Text ko bhi WebSocket ke bajaye AJAX (fetch) se bhejo
+                // Taaki Django view me jaye, aur Conversation/Streak update ho sake
+                const formData = new FormData(form);
+                fetch(sendUrl, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    textInput.value = ''; // Box khali kar do
+                })
+                .catch(err => console.error("Message Error:", err));
             }
         });
     }

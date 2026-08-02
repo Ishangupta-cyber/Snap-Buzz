@@ -99,3 +99,18 @@ def update_location(request):
         return JsonResponse({"status": "error", "message": "Invalid coordinates"}, status=400)
     except Exception as e:
         return JsonResponse({"status": "error", "message": str(e)}, status=500)
+
+import os
+from django.conf import settings
+
+@login_required
+def spotlight_view(request):
+    stories_dir = os.path.join(settings.MEDIA_ROOT, 'stories')
+    videos = []
+    if os.path.exists(stories_dir):
+        videos = [f for f in os.listdir(stories_dir) if f.endswith('.mp4')]
+    
+    # Return full URL paths
+    video_urls = [f"{settings.MEDIA_URL}stories/{v}" for v in videos]
+    
+    return render(request, "pages/spotlight.html", {"videos": video_urls})

@@ -22,6 +22,7 @@ urlpatterns=[
   path("accept-invite/<int:id>", views.accept_invite, name="accept-invite"),
   # path("send-snap/<int:id>", views.send_snap, name="send-snap"),
   path("camera/",views.camera,name="camera"),
+  path("spotlight/", views.spotlight_view, name="spotlight"),
   
   # Map Routes
   path("map/", views.map_view, name="map"),

@@ -19,9 +19,9 @@
         <span class="dock-label">Stories</span>
       </button>
 
-      <button class="hover:text-purple-400 transition-colors" onclick="window.location.href='{% url 'stories' %}'">
+      <button class="hover:text-purple-400 transition-colors {% if request.resolver_match.url_name == 'spotlight' %}dock-active{% endif %}" onclick="window.location.href='{% url 'spotlight' %}'">
         <i class="ph ph-play text-2xl text-white"></i>
-        <span class="dock-label">Stories</span>
+        <span class="dock-label">Spotlight</span>
       </button>
 
     </nav>

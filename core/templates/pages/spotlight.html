@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block main %}
+
+<div class="absolute top-0 w-full z-50 flex justify-between items-center p-4 pointer-events-none">
+    <div class="flex items-center gap-2 pointer-events-auto">
+        <a href="{% url 'home' %}" class="cursor-pointer hover:text-purple-400 transition-colors">
+            <i class="fa-solid fa-chevron-left"></i>
+        </a>
+    </div>
+    <div class="flex gap-4 font-bold text-white text-lg drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] pointer-events-auto">
+        <span class="opacity-50 cursor-pointer hover:opacity-100">Following</span>
+        <span class="border-b-2 border-white pb-1">Spotlight</span>
+    </div>
+    <div class="pointer-events-auto">
+        <i class="fa-solid fa-camera text-white text-xl drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] cursor-pointer hover:text-purple-400"></i>
+    </div>
+</div>
+
+
+
+
+<div class="snap-y snap-mandatory h-[100dvh] w-full overflow-y-scroll overflow-x-hidden hide-scrollbar bg-black absolute top-0 left-0" id="spotlight-container">
+    {% for video_url in videos %}
+    <div class="snap-start relative h-[100dvh] w-full bg-black flex items-center justify-center video-container">
+        
+        <video 
+            src="{{ video_url }}" 
+            class="w-full h-full object-cover spotlight-video cursor-pointer" 
+            loop 
+            playsinline>
+        </video>
+
+
+
+
+        <div class="absolute right-4 bottom-28 flex flex-col items-center gap-6 z-40">
+            <div class="flex flex-col items-center gap-1 cursor-pointer hover:scale-110 transition-transform">
+                <div class="bg-slate-800/60 p-3 rounded-full backdrop-blur-sm">
+                    <i class="fa-solid fa-heart text-white text-2xl"></i>
+                </div>
+                <span class="text-white text-xs font-semibold drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">1.2M</span>
+            </div>
+            
+            <div class="flex flex-col items-center gap-1 cursor-pointer hover:scale-110 transition-transform">
+                <div class="bg-slate-800/60 p-3 rounded-full backdrop-blur-sm">
+                    <i class="fa-solid fa-comment-dots text-white text-2xl"></i>
+                </div>
+                <span class="text-white text-xs font-semibold drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">45K</span>
+            </div>
+
+            <div class="flex flex-col items-center gap-1 cursor-pointer hover:scale-110 transition-transform">
+                <div class="bg-slate-800/60 p-3 rounded-full backdrop-blur-sm">
+                    <i class="fa-solid fa-bookmark text-white text-2xl"></i>
+                </div>
+                <span class="text-white text-xs font-semibold drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">Save</span>
+            </div>
+
+            <div class="flex flex-col items-center gap-1 cursor-pointer hover:scale-110 transition-transform">
+                <div class="bg-slate-800/60 p-3 rounded-full backdrop-blur-sm">
+                    <i class="fa-solid fa-share text-white text-2xl"></i>
+                </div>
+                <span class="text-white text-xs font-semibold drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">Share</span>
+            </div>
+        </div>
+        
+
+        
+        <div class="absolute left-4 bottom-28 z-40 text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] max-w-[70%] pointer-events-none">
+            <div class="flex items-center gap-2 mb-2 pointer-events-auto">
+                <div class="w-10 h-10 rounded-full bg-gradient-to-r from-purple-500 to-cyan-500 p-[2px]">
+                    <img src="https://ui-avatars.com/api/?name=Snap+Star&background=random" class="w-full h-full rounded-full object-cover bg-black">
+                </div>
+                <span class="font-bold text-base">@snap_star</span>
+                <button class="border border-white/50 px-2 py-0.5 rounded text-xs font-semibold ml-2 backdrop-blur-sm hover:bg-white hover:text-black transition-colors">Subscribe</button>
+            </div>
+            <p class="text-sm font-light mb-1">Check out this awesome spotlight video! 🔥✨ #spotlight #viral</p>
+            <div class="flex items-center gap-2 text-xs opacity-90">
+                <i class="fa-solid fa-music"></i>
+                <span>Original Sound - Viral Hits</span>
+            </div>
+        </div>
+
+    </div>
+
+    {% endfor %}
+</div>
+
+
+
+<style>
+
+    .hide-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+    .hide-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const videos = document.querySelectorAll('.spotlight-video');
+    
+    if(videos.length > 0) {
+        
+        videos[0].play().catch(e => console.log("Autoplay prevented:", e));
+    }
+
+    const observerOptions = {
+        root: document.getElementById('spotlight-container'),
+        rootMargin: '0px',
+        threshold: 0.6
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            const video = entry.target.querySelector('video');
+            if (entry.isIntersecting) {
+                if (video) {
+                    video.currentTime = 0; // Restart video when scrolling to it
+                    video.play().catch(e => console.log("Autoplay prevented:", e));
+                }
+            } else {
+                if (video) {
+                    video.pause();
+                }
+            }
+        });
+    }, observerOptions);
+
+    document.querySelectorAll('.video-container').forEach(container => {
+        observer.observe(container);
+    });
+
+    // Toggle Play/Pause on click
+    videos.forEach(video => {
+        video.addEventListener('click', function() {
+            if (this.paused) {
+                this.play();
+            } else {
+                this.pause();
+            }
+        });
+    });
+});
+</script>
+
+{% endblock %}
