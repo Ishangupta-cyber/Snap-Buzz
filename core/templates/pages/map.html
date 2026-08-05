@@ -2,8 +2,6 @@
 {% load static %}
 
 {% block main %}
-<!-- Leaflet CSS -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
 
 <style>
     /* Full screen map behind the dock */
@@ -15,34 +13,6 @@
         right: 0;
         z-index: 10;
         background-color: #0f172a; /* Slate 900 for dark mode feel */
-    }
-
-    /* Custom Leaflet Dark Mode using CSS Filters */
-    .leaflet-layer,
-    .leaflet-control-zoom-in,
-    .leaflet-control-zoom-out,
-    .leaflet-control-attribution {
-        filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
-    }
-
-    /* Custom Marker Style */
-    .snap-marker-container {
-        position: relative;
-        width: 50px;
-        height: 50px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-    
-    .snap-marker-avatar {
-        width: 44px;
-        height: 44px;
-        border-radius: 50%;
-        border: 3px solid white;
-        object-fit: cover;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-        background-color: #fff;
     }
 
     /* Floating Header */
@@ -69,135 +39,18 @@
     <div class="bg-slate-900/80 backdrop-blur text-white px-4 py-2 rounded-full font-bold shadow-lg flex items-center gap-2">
         <i class="fa-solid fa-earth-americas text-purple-400"></i> Snap Map
     </div>
-    <button class="btn btn-circle bg-slate-900/80 text-white border-none backdrop-blur shadow-lg" onclick="centerOnMe()">
+    <button class="btn btn-circle bg-slate-900/80 text-white border-none backdrop-blur shadow-lg" id="locate-me-btn">
         <i class="fa-solid fa-location-crosshairs"></i>
     </button>
 </div>
 
-<!-- Map Container -->
 <div id="map"></div>
 
-<!-- Dock -->
+
 {% include 'components/bottom-navbar.html' %}
-
-<!-- Leaflet JS -->
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-
 <script>
-    // Initialize map
-    var map = L.map('map', {
-        zoomControl: false // Hide default zoom control to keep UI clean
-    }).setView([20.5937, 78.9629], 5); // Default center (India)
-
-    // Add OpenStreetMap tiles
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        attribution: '© OpenStreetMap'
-    }).addTo(map);
-
-    // CSRF Token for POST request
     const csrfToken = "{{ csrf_token }}";
-    
-    // Friends Data from Backend
-    const friendsData = JSON.parse('{{ friends_json|escapejs }}');
-    const friendMarkers = [];
-
-    // Helper: Create custom marker icon
-    function createAvatarIcon(avatarUrl) {
-        return L.divIcon({
-            className: 'custom-div-icon',
-            html: `
-                <div class="snap-marker-container">
-                    <img src="${avatarUrl}" class="snap-marker-avatar" />
-                </div>
-            `,
-            iconSize: [50, 50],
-            iconAnchor: [25, 25],
-            popupAnchor: [0, -25]
-        });
-    }
-
-    // Add Friend Markers
-    friendsData.forEach(friend => {
-        if(friend.lat && friend.lng) {
-            const icon = createAvatarIcon(friend.avatar);
-            const marker = L.marker([friend.lat, friend.lng], { icon: icon }).addTo(map);
-            
-            // Add popup
-            let popupContent = `<b>${friend.username}</b>`;
-            if (friend.last_update) {
-                popupContent += `<br><small class="text-slate-500">Seen ${friend.last_update}</small>`;
-            }
-            marker.bindPopup(popupContent);
-            friendMarkers.push(marker);
-        }
-    });
-
-    let myMarker = null;
-
-    // Send location to server
-    function updateLocationOnServer(lat, lng) {
-        fetch("{% url 'update-location' %}", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRFToken": csrfToken
-            },
-            body: JSON.stringify({ lat: lat, lng: lng })
-        })
-        .then(res => res.json())
-        .then(data => console.log("Location updated:", data))
-        .catch(err => console.error("Error updating location", err));
-    }
-
-    // Get User's Location
-    function centerOnMe() {
-        if ("geolocation" in navigator) {
-            navigator.geolocation.getCurrentPosition(
-                function(position) {
-                    const lat = position.coords.latitude;
-                    const lng = position.coords.longitude;
-                    
-                    // Center map
-                    map.setView([lat, lng], 14);
-
-                    // Drop or move marker for current user
-                    if (myMarker) {
-                        myMarker.setLatLng([lat, lng]);
-                    } else {
-                        // Use a generic blue dot or user's own avatar if passed
-                        const myIcon = L.divIcon({
-                            className: 'custom-div-icon',
-                            html: `
-                                <div class="snap-marker-container">
-                                    <div class="w-10 h-10 bg-blue-500 rounded-full border-4 border-white shadow-lg animate-pulse"></div>
-                                </div>
-                            `,
-                            iconSize: [40, 40],
-                            iconAnchor: [20, 20]
-                        });
-                        myMarker = L.marker([lat, lng], { icon: myIcon }).addTo(map);
-                        myMarker.bindPopup("<b>You</b>").openPopup();
-                    }
-
-                    // Save to backend
-                    updateLocationOnServer(lat, lng);
-                },
-                function(error) {
-                    console.error("Geolocation error:", error);
-                    alert("Please allow location access to use Snap Map.");
-                },
-                { enableHighAccuracy: true }
-            );
-        } else {
-            alert("Geolocation is not supported by your browser.");
-        }
-    }
-
-    // On page load, try to get location
-    setTimeout(() => {
-        centerOnMe();
-    }, 1000);
-
 </script>
+
+<script src="{% static 'map.js' %}"></script>
 {% endblock %}
