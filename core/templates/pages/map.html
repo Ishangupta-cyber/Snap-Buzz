@@ -44,13 +44,28 @@
     </button>
 </div>
 
-<div id="map"></div>
+<div id="map">
+
+
+
+</div>
 
 
 {% include 'components/bottom-navbar.html' %}
+
+<!-- Leaflet ki CSS aur JS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+
+<!-- 1. Django wala data yahan Global Variable me daal do -->
 <script>
-    const csrfToken = "{{ csrf_token }}";
+    window.csrfToken = "{{ csrf_token }}";
+    window.friendsData = JSON.parse('{{ friends_data|escapejs }}');
 </script>
 
+
+<!-- 2. Ab apni external JS file link karo -->
 <script src="{% static 'map.js' %}"></script>
+
 {% endblock %}

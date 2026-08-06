@@ -5,6 +5,9 @@ from core.models import FriendRequest, Story
 from datetime import timedelta
 from django.utils import timezone
 from django.http import JsonResponse
+from django.views.decorators.http import require_http_methods
+import json 
+
 
 @login_required
 def stories_view(request):
@@ -46,16 +49,30 @@ def camera(request):
 
     return render(request, "pages/camera.html", {"friends": friends})
 
-import json
-from django.http import JsonResponse
-from django.utils import timezone
-from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_http_methods
 
 @login_required
 def map_view(request):
-    # Khali panna (blank slate) for map
-    return render(request, "pages/map.html")
+
+    friend_reqs=FriendRequest.objects.filter(
+        Q(to_user=request.user) | Q(from_user=request.user),
+        status="accepted"
+    )
+
+    friends_data=[]
+    for req in friend_reqs:
+        friend= req.to_user if req.from_user==request.user else req.from_user
+
+        if friend.latitude and friend.longitude:
+            friends_data.append({
+                "username": friend.username,
+                "lat": friend.latitude,
+                "lng": friend.longitude,
+                "avatar": friend.avatar.url if friend.avatar else None,
+            })
+
+        
+    friends_json=json.dumps(friends_data)
+    return render(request, "pages/map.html",{"friends_data": friends_json})
 
 import os
 from django.conf import settings
