@@ -1,53 +1,55 @@
+// Snap viewer: click "New Snap" -> image modal me khulta hai, server pe opened mark hota hai.
+// Event delegation (#chat-box pe ek hi listener) use kiya hai, isliye WebSocket se
+// live aaye naye snaps bhi bina page refresh ke khul jaate hain.
+
+const OPENED_SNAP_HTML = `
+    <div class="flex items-center gap-2 mb-2 px-1 text-slate-300">
+        <i class="fa-regular fa-square text-red-500 text-lg"></i>
+        <span class="font-semibold text-sm">Opened</span>
+    </div>`;
+
+// Global helper — chat_websocket.js bhi isko use karta hai jab "snap_opened" event aata hai
+window.showSnapOpened = function (messageId) {
+    const el = document.querySelector(`[data-snap-id="${CSS.escape(String(messageId))}"]`);
+    if (el) el.outerHTML = OPENED_SNAP_HTML;
+};
 
 document.addEventListener("DOMContentLoaded", () => {
-    const snapTriggers = document.querySelectorAll('.snap-trigger');
-    const snapModal = document.getElementById('snap-modal');
-    const snapModalImage = document.getElementById('snap-modal-image');
-    
-    // CSRF Token fetch karne ke liye (kyunki humein POST request karni hai)
-    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    const chatbox = document.getElementById("chat-box");
+    const snapModal = document.getElementById("snap-modal");
+    const snapModalImage = document.getElementById("snap-modal-image");
+    const csrfToken = document.querySelector("[name=csrfmiddlewaretoken]").value;
 
-    snapTriggers.forEach(trigger => {
-        trigger.addEventListener('click', function() {
-            const snapId = this.getAttribute('data-snap-id');
-            const snapUrl = this.getAttribute('data-snap-url');
-            
-              snapModalImage.src = snapUrl;
-                    snapModal.showModal();
+    if (!chatbox || !snapModal) return;
 
-            
-            
-            
-            fetch(`/mark-snap-opened/${snapId}`, {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': csrfToken,
-                    'Content-Type': 'application/json'
+    // Modal band hote hi image hata do — one-time view
+    snapModal.addEventListener("close", () => {
+        snapModalImage.removeAttribute("src");
+    });
+
+    chatbox.addEventListener("click", (e) => {
+        const trigger = e.target.closest(".snap-trigger");
+        if (!trigger) return;
+
+        const snapId = trigger.dataset.snapId;
+        const snapUrl = trigger.dataset.snapUrl;
+
+        // Double-click se dobara na khule
+        trigger.classList.remove("snap-trigger");
+
+        snapModalImage.src = snapUrl;
+        snapModal.showModal();
+
+        fetch(`/mark-snap-opened/${snapId}`, {
+            method: "POST",
+            headers: { "X-CSRFToken": csrfToken },
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                if (data.status === "success" || data.status === "already_opened") {
+                    window.showSnapOpened(snapId);
                 }
             })
-            .then(response => response.json())
-            .then(data => {
-                if(data.status === "success") {
-                    
-                
-                    this.classList.remove('snap-trigger', 'cursor-pointer', 'text-slate-100', 'hover:text-white');
-                    this.classList.add('text-slate-400');
-                    
-                    const icon = this.querySelector('.snap-icon');
-                    icon.classList.remove('fa-solid', 'drop-shadow-[0_0_8px_rgba(239,68,68,0.5)]');
-                    icon.classList.add('fa-regular');
-                    
-                    const text = this.querySelector('.snap-text');
-                    text.textContent = 'Opened';
-                    text.classList.remove('font-bold');
-                    text.classList.add('font-semibold');
-                    
-                    // Button ke onClick events ko kill karne ka tareeka (clone karke replace)
-                    const clone = this.cloneNode(true);
-                    this.parentNode.replaceChild(clone, this);
-                }
-            })
-            .catch(err => console.error(err));
-        });
+            .catch((err) => console.error(err));
     });
 });

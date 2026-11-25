@@ -4,6 +4,18 @@ from django.utils import timezone
 from datetime import timedelta
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
+from django import forms
+
+
+def clean_image(file):
+    """
+    Validate an uploaded file is a real image (Pillow verify + extension check).
+    Returns the file (or None) — raises django.core.exceptions.ValidationError if invalid.
+    """
+    if not file:
+        return None
+    return forms.ImageField().clean(file)
+
 
 def are_friends(user1, user2):
     return FriendRequest.objects.filter(

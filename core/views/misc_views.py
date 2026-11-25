@@ -6,7 +6,9 @@ from datetime import timedelta
 from django.utils import timezone
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
-import json 
+from django.core.exceptions import ValidationError
+from core.utils import clean_image
+import json
 
 
 @login_required
@@ -24,17 +26,19 @@ def stories_view(request):
         
     return render(request, "pages/stories.html", {"user_stories": user_stories})
 
-from django.http import JsonResponse
-
 @login_required
+@require_http_methods(["POST"])
 def upload_story(request):
-    if request.method == "POST" and request.FILES.get("image"):
-        Story.objects.create(
-            user=request.user,
-            image=request.FILES["image"]
-        )
-        return JsonResponse({"status": "success"})
-    return JsonResponse({"status": "error", "message": "Invalid request"}, status=400)
+    try:
+        image = clean_image(request.FILES.get("image"))
+    except ValidationError:
+        return JsonResponse({"status": "error", "message": "Please upload a valid image"}, status=400)
+
+    if not image:
+        return JsonResponse({"status": "error", "message": "No image provided"}, status=400)
+
+    Story.objects.create(user=request.user, image=image)
+    return JsonResponse({"status": "success"})
 
 @login_required
 def camera(request):

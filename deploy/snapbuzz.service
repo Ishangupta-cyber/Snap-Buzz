@@ -1,0 +1,19 @@
+# Snap Buzz — Daphne (ASGI) systemd unit.
+# Placeholders (__APP_DIR__, __APP_USER__) are filled in by deploy/setup.sh.
+
+[Unit]
+Description=Snap Buzz (Django + Channels via Daphne)
+After=network.target redis-server.service
+Requires=redis-server.service
+
+[Service]
+User=__APP_USER__
+Group=__APP_USER__
+WorkingDirectory=__APP_DIR__
+EnvironmentFile=__APP_DIR__/.env
+ExecStart=__APP_DIR__/.venv/bin/daphne --bind 127.0.0.1 --port 8000 --proxy-headers snap.asgi:application
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

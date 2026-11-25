@@ -27,16 +27,17 @@ def search_view(request):
         pending_requests = queryset.filter(status="pending")
 
         for friend in friends:
-            if friend.from_user == request.user:
-                unique_friends.add(friend.to_user)
+            # IDs store karo (objects nahi) taaki template me `user.id in unique_friends` sahi kaam kare
+            if friend.from_user_id == request.user.id:
+                unique_friends.add(friend.to_user_id)
             else:
-                unique_friends.add(friend.from_user)
+                unique_friends.add(friend.from_user_id)
 
         for req in pending_requests:
-            if request.user == req.from_user:
-                pending.add(req.to_user.id)
+            if req.from_user_id == request.user.id:
+                pending.add(req.to_user_id)
             else:
-                pending.add(req.from_user.id)
+                pending.add(req.from_user_id)
 
     return render(request, "pages/search.html", {
         "search_username": search_username,
@@ -52,7 +53,7 @@ def send_invite(request, id):
     if id == request.user.id:
         return JsonResponse({"status": "error", "message": "Cannot send request to yourself"})
 
-    to_user = get_user_model().objects.get(id=id)
+    to_user = get_object_or_404(get_user_model(), id=id)
 
     if FriendRequest.objects.filter(Q(to_user=to_user, from_user=request.user) | Q(to_user=request.user, from_user=to_user)).exists():
         return JsonResponse({"status": "error", "message": "Request already exists"})

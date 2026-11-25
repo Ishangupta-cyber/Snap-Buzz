@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Secrets / local env
+.env
+.env.*
+
+# Local database (production has its own — never commit/overwrite it)
+db.sqlite3
+db.sqlite3-journal
+
+# User uploads — keep only the default avatars the app needs
+media/*
+!media/avatar/
+media/avatar/*
+!media/avatar/default.jpg
+!media/snaps/
+media/snaps/*
+!media/snaps/default.jpg
+
+# collectstatic output
+staticfiles/
+
+# Editor / OS
+.DS_Store
+Thumbs.db

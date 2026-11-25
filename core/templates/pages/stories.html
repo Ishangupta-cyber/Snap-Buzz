@@ -4,9 +4,10 @@
 
 
 {% include "components/top-bar.html" with fillcontent="Stories" color="gray" %}
+
 <div class="flex gap-3 p-4 overflow-x-auto scrollbar-hide"> 
     <!-- Create Your Own Story Button -->
-    <a href="{% url 'camera' %}" class="flex flex-col items-center gap-1 shrink-0">
+    <a href="{% url 'camera' %}" class="flex flex-col items-center gap-1 ">
         <div class="relative w-16 h-16 rounded-full border-2 border-dashed border-slate-500 flex items-center justify-center bg-slate-800 text-slate-400 hover:text-white hover:border-white transition-colors cursor-pointer">
             <i class="fa-solid fa-plus text-xl"></i>
         </div>

@@ -10,6 +10,8 @@ faker = "*"
 requests = "*"
 channels = "*"
 daphne = "*"
+cbor2 = "<6"
+channels-redis = "*"
 
 [dev-packages]
 

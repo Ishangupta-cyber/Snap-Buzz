@@ -7,7 +7,8 @@ from django.db.models import Q
 from django.utils import timezone
 from datetime import timedelta
 from core.models import Message, Conversation
-from core.utils import are_friends, process_and_broadcast_message
+from django.core.exceptions import ValidationError
+from core.utils import are_friends, process_and_broadcast_message, clean_image
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 
@@ -53,13 +54,16 @@ def chat_details_view(request, id):
 @require_http_methods(["POST"])
 @login_required
 def send_message(request, id):
-    if not are_friends(request.user, get_object_or_404(get_user_model(), pk=id)):
-        return redirect("home")
-    
     receiver = get_object_or_404(get_user_model(), pk=id)
-    content = request.POST.get("content", "")
-    image = request.FILES.get("image")
-    
+    if not are_friends(request.user, receiver):
+        return JsonResponse({"status": "failed", "message": "You can only message friends"}, status=403)
+
+    content = request.POST.get("content", "").strip()
+    try:
+        image = clean_image(request.FILES.get("image"))
+    except ValidationError:
+        return JsonResponse({"status": "failed", "message": "Please upload a valid image"}, status=400)
+
     if content or image:
         process_and_broadcast_message(request.user, receiver, content, image)
         return JsonResponse({"status": "success", "message": "Message sent!"})

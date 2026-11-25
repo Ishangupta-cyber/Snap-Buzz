@@ -123,7 +123,8 @@ document.addEventListener("DOMContentLoaded", function() {
                     video.currentTime = 0; // Restart video when scrolling to it
                     video.play().catch(e => console.log("Autoplay prevented:", e));
                 }
-            } else {
+            } 
+            else {
                 if (video) {
                     video.pause();
                 }
