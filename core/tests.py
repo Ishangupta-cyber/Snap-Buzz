@@ -78,6 +78,42 @@ class ViewTests(TestCase):
         self.assertEqual(Story.objects.count(), 1)
 
 
+@override_settings(MEDIA_ROOT=TEMP_MEDIA)
+class SeedDemoTests(TestCase):
+    def test_seed_creates_demo_data_and_is_idempotent(self):
+        from django.core.management import call_command
+        from core.models import Conversation
+
+        me = SnapUser.objects.create_user("ishan", password="pass12345!")
+        call_command("seed_demo", "--for", "ishan", stdout=io.StringIO())
+
+        friends = FriendRequest.objects.filter(to_user=me, status="accepted").count()
+        pending = FriendRequest.objects.filter(to_user=me, status="pending").count()
+        msgs = Message.objects.count()
+        self.assertEqual(friends, 6)
+        self.assertEqual(pending, 2)
+        self.assertGreater(msgs, 15)
+        self.assertTrue(Message.objects.filter(receiver=me, is_opened=False).exclude(image="").exists())
+        self.assertGreater(Story.objects.count(), 0)
+        self.assertTrue(Conversation.objects.filter(streak_count=27).exists())
+        self.assertEqual(SnapUser.objects.filter(latitude__isnull=False).count(), 6)
+
+        # Map page receives the friends' locations
+        self.client.force_login(me)
+        self.assertContains(self.client.get("/map/"), "priya")
+
+        # Re-running must not duplicate anything
+        stories = Story.objects.count()
+        call_command("seed_demo", "--for", "ishan", stdout=io.StringIO())
+        self.assertEqual(Message.objects.count(), msgs)
+        self.assertEqual(Story.objects.count(), stories)
+
+        # Reset wipes and re-creates cleanly
+        call_command("seed_demo", "--for", "ishan", "--reset", stdout=io.StringIO())
+        self.assertEqual(FriendRequest.objects.filter(to_user=me, status="accepted").count(), 6)
+        self.assertEqual(Message.objects.count(), msgs)
+
+
 class ConsumerTests(TransactionTestCase):
     def setUp(self):
         self.alice, self.bob, self.eve = make_users()

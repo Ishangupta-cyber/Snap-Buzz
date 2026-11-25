@@ -157,7 +157,9 @@ if not DEBUG:
     if HTTPS_ENABLED:
         SECURE_HSTS_SECONDS = 60 * 60 * 24 * 30
     SECURE_CONTENT_TYPE_NOSNIFF = True
-    SECURE_REFERRER_POLICY = "same-origin"
+    # Not "same-origin": OpenStreetMap blocks tile requests that carry no Referer
+    # (403 "Access blocked"). This sends only the site origin to other domains.
+    SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
 
     LOGGING = {
         "version": 1,

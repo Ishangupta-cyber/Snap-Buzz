@@ -2,8 +2,10 @@
 var map = L.map('map', { zoomControl: false }).setView([20.5937, 78.9629], 5);
 
 // 2. Map ke "Tiles" mangwana
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+// OSM ki usage policy: attribution dikhana zaroori hai, aur single host use karo ({s} subdomains deprecated)
+L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
 }).addTo(map);
 
 
