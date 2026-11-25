@@ -114,6 +114,67 @@ class SeedDemoTests(TestCase):
         self.assertEqual(Message.objects.count(), msgs)
 
 
+@override_settings(MEDIA_ROOT=TEMP_MEDIA)
+class DemoLoginTests(TestCase):
+    def setUp(self):
+        from django.core.cache import cache
+        cache.clear()
+
+    def test_login_page_has_demo_button(self):
+        self.assertContains(self.client.get("/login/"), 'action="/demo/"')
+
+    def test_demo_button_logs_in_fresh_guest_with_data(self):
+        resp = self.client.post("/demo/")
+        self.assertRedirects(resp, "/")
+        guest = SnapUser.objects.get(is_demo_guest=True)
+        self.assertTrue(guest.username.startswith("guest_"))
+        self.assertFalse(guest.has_usable_password())
+        self.assertEqual(FriendRequest.objects.filter(to_user=guest, status="accepted").count(), 6)
+
+        home = self.client.get("/")
+        self.assertContains(home, "priya")
+        self.assertContains(home, "🔥")
+
+    def test_each_visitor_gets_isolated_data(self):
+        self.client.post("/demo/")
+        first = SnapUser.objects.get(is_demo_guest=True)
+        snap = Message.objects.filter(receiver=first, is_opened=False).exclude(image="").first()
+        self.client.post(f"/mark-snap-opened/{snap.id}")  # visitor 1 opens a snap
+
+        other = self.client_class()
+        other.post("/demo/")
+        second = SnapUser.objects.filter(is_demo_guest=True).exclude(pk=first.pk).get()
+        # visitor 2 still has all their snaps unopened
+        self.assertFalse(Message.objects.filter(receiver=second, is_opened=True).exists())
+
+    def test_get_not_allowed(self):
+        self.assertEqual(self.client.get("/demo/").status_code, 405)
+
+    def test_rate_limited_per_ip(self):
+        from core.views.auth_views import DEMO_LOGINS_PER_IP_PER_HOUR
+        for _ in range(DEMO_LOGINS_PER_IP_PER_HOUR):
+            self.client_class().post("/demo/")
+        resp = self.client_class().post("/demo/")
+        self.assertEqual(resp.status_code, 429)
+
+    def test_cleanup_removes_only_old_guests(self):
+        from datetime import timedelta
+        from django.core.management import call_command
+        from django.utils import timezone
+
+        self.client.post("/demo/")
+        self.client_class().post("/demo/")
+        real = SnapUser.objects.create_user("realuser", password="pass12345!")
+        old = SnapUser.objects.filter(is_demo_guest=True).first()
+        SnapUser.objects.filter(pk=old.pk).update(date_joined=timezone.now() - timedelta(hours=25))
+
+        call_command("cleanup_guests", stdout=io.StringIO())
+        self.assertFalse(SnapUser.objects.filter(pk=old.pk).exists())
+        self.assertEqual(SnapUser.objects.filter(is_demo_guest=True).count(), 1)
+        self.assertTrue(SnapUser.objects.filter(pk=real.pk).exists())
+        self.assertTrue(SnapUser.objects.filter(username="priya").exists())  # shared friends kept
+
+
 class ConsumerTests(TransactionTestCase):
     def setUp(self):
         self.alice, self.bob, self.eve = make_users()

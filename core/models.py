@@ -11,6 +11,8 @@ class SnapUser(AbstractUser) :
   latitude = models.FloatField(null=True, blank=True)
   longitude = models.FloatField(null=True, blank=True)
   last_location_update = models.DateTimeField(null=True, blank=True)
+  # Throwaway account created by the "Try the demo" button; auto-deleted after 24h
+  is_demo_guest = models.BooleanField(default=False)
 
 class FriendRequest(models.Model):
   from_user=models.ForeignKey(to=get_user_model(),on_delete=models.CASCADE,related_name="sent_friend_requests")

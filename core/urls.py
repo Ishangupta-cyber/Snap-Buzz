@@ -7,6 +7,7 @@ urlpatterns=[
   path("register/",views.register_view,name="register-user"),
   path("login/",views.login_view,name="login-user"),
   path("logout/",views.logout_view,name="logout-user"),
+  path("demo/", views.demo_login_view, name="demo-login"),  # "Try the demo" button
 
   path("search/",views.search_view,name="search-users"), #search users page
   path("send-invite/<int:id>", views.send_invite, name="send-invite"), # send friend request
