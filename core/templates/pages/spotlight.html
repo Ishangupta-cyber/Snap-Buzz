@@ -5,7 +5,7 @@
 
 <div class="absolute top-0 w-full z-50 flex justify-between items-center p-4 pointer-events-none">
     <div class="flex items-center gap-2 pointer-events-auto">
-        <a href="{% url 'home' %}" class="cursor-pointer hover:text-purple-400 transition-colors">
+        <a href="{% url 'home' %}" class="cursor-pointer text-white hover:text-purple-400 transition-colors drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
             <i class="fa-solid fa-chevron-left"></i>
         </a>
     </div>
@@ -14,35 +14,49 @@
         <span class="border-b-2 border-white pb-1">Spotlight</span>
     </div>
     <div class="pointer-events-auto">
-        <i class="fa-solid fa-camera text-white text-xl drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] cursor-pointer hover:text-purple-400"></i>
+        <a href="{% url 'camera' %}">
+            <i class="fa-solid fa-camera text-white text-xl drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] cursor-pointer hover:text-purple-400"></i>
+        </a>
     </div>
 </div>
 
-
-
-
-<div class="snap-y snap-mandatory h-[100dvh] w-full overflow-y-scroll overflow-x-hidden hide-scrollbar bg-black absolute top-0 left-0" id="spotlight-container">
+<!-- h-full (not 100dvh): each video must fill the app box exactly, which is 90vh on desktop -->
+<div class="snap-y snap-mandatory h-full w-full overflow-y-scroll overflow-x-hidden hide-scrollbar bg-black absolute inset-0" id="spotlight-container">
     {% for video_url in videos %}
-    <div class="snap-start relative h-[100dvh] w-full bg-black flex items-center justify-center video-container">
-        
-        <video 
-            src="{{ video_url }}" 
-            class="w-full h-full object-cover spotlight-video cursor-pointer" 
-            loop 
-            playsinline>
+    <div class="snap-start snap-always relative h-full w-full bg-black flex items-center justify-center video-container">
+
+        <!-- muted: browsers block autoplay WITH sound until the user interacts with the site -->
+        <video
+            src="{{ video_url }}"
+            class="w-full h-full object-cover spotlight-video cursor-pointer"
+            muted
+            loop
+            playsinline
+            preload="metadata">
         </video>
 
+        <!-- Shown while paused (or if the browser still blocks autoplay) -->
+        <div class="play-overlay hidden absolute inset-0 flex items-center justify-center pointer-events-none z-30">
+            <div class="bg-black/40 rounded-full p-5 backdrop-blur-sm">
+                <i class="fa-solid fa-play text-white text-4xl ml-1"></i>
+            </div>
+        </div>
 
+        <div class="absolute right-4 bottom-10 flex flex-col items-center gap-6 z-40">
+            <button type="button" class="mute-toggle flex flex-col items-center gap-1 cursor-pointer hover:scale-110 transition-transform" aria-label="Toggle sound">
+                <div class="bg-slate-800/60 p-3 rounded-full backdrop-blur-sm">
+                    <i class="mute-icon fa-solid fa-volume-xmark text-white text-2xl"></i>
+                </div>
+                <span class="mute-label text-white text-xs font-semibold drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">Sound</span>
+            </button>
 
-
-        <div class="absolute right-4 bottom-28 flex flex-col items-center gap-6 z-40">
             <div class="flex flex-col items-center gap-1 cursor-pointer hover:scale-110 transition-transform">
                 <div class="bg-slate-800/60 p-3 rounded-full backdrop-blur-sm">
                     <i class="fa-solid fa-heart text-white text-2xl"></i>
                 </div>
                 <span class="text-white text-xs font-semibold drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">1.2M</span>
             </div>
-            
+
             <div class="flex flex-col items-center gap-1 cursor-pointer hover:scale-110 transition-transform">
                 <div class="bg-slate-800/60 p-3 rounded-full backdrop-blur-sm">
                     <i class="fa-solid fa-comment-dots text-white text-2xl"></i>
@@ -52,22 +66,13 @@
 
             <div class="flex flex-col items-center gap-1 cursor-pointer hover:scale-110 transition-transform">
                 <div class="bg-slate-800/60 p-3 rounded-full backdrop-blur-sm">
-                    <i class="fa-solid fa-bookmark text-white text-2xl"></i>
-                </div>
-                <span class="text-white text-xs font-semibold drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">Save</span>
-            </div>
-
-            <div class="flex flex-col items-center gap-1 cursor-pointer hover:scale-110 transition-transform">
-                <div class="bg-slate-800/60 p-3 rounded-full backdrop-blur-sm">
                     <i class="fa-solid fa-share text-white text-2xl"></i>
                 </div>
                 <span class="text-white text-xs font-semibold drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">Share</span>
             </div>
         </div>
-        
 
-        
-        <div class="absolute left-4 bottom-28 z-40 text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] max-w-[70%] pointer-events-none">
+        <div class="absolute left-4 bottom-10 z-40 text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] max-w-[70%] pointer-events-none">
             <div class="flex items-center gap-2 mb-2 pointer-events-auto">
                 <div class="w-10 h-10 rounded-full bg-gradient-to-r from-purple-500 to-cyan-500 p-[2px]">
                     <img src="https://ui-avatars.com/api/?name=Snap+Star&background=random" class="w-full h-full rounded-full object-cover bg-black">
@@ -83,67 +88,81 @@
         </div>
 
     </div>
-
+    {% empty %}
+    <div class="h-full w-full flex flex-col items-center justify-center text-center px-8 text-slate-400">
+        <i class="fa-solid fa-film text-5xl mb-4 opacity-50"></i>
+        <p class="font-semibold text-slate-200">No Spotlight videos yet</p>
+        <p class="text-sm mt-1">Videos added to <code>media/stories/</code> (.mp4) will show up here.</p>
+    </div>
     {% endfor %}
 </div>
 
-
-
 <style>
-
-    .hide-scrollbar::-webkit-scrollbar {
-        display: none;
-    }
-    .hide-scrollbar {
-        -ms-overflow-style: none;
-        scrollbar-width: none;
-    }
+    .hide-scrollbar::-webkit-scrollbar { display: none; }
+    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 </style>
 
 <script>
-document.addEventListener("DOMContentLoaded", function() {
-    const videos = document.querySelectorAll('.spotlight-video');
-    
-    if(videos.length > 0) {
-        
-        videos[0].play().catch(e => console.log("Autoplay prevented:", e));
+document.addEventListener("DOMContentLoaded", function () {
+    const container = document.getElementById("spotlight-container");
+    const videos = document.querySelectorAll(".spotlight-video");
+    let soundOn = false; // starts muted so autoplay is allowed; one tap turns sound on for all
+
+    const overlayOf = (video) => video.parentElement.querySelector(".play-overlay");
+
+    function tryPlay(video) {
+        video.muted = !soundOn;
+        video.play()
+            .then(() => overlayOf(video).classList.add("hidden"))
+            .catch(() => {
+                // Still blocked (e.g. Low Power Mode) — show the play button
+                overlayOf(video).classList.remove("hidden");
+            });
     }
 
-    const observerOptions = {
-        root: document.getElementById('spotlight-container'),
-        rootMargin: '0px',
-        threshold: 0.6
-    };
+    function updateMuteButtons() {
+        document.querySelectorAll(".mute-icon").forEach((icon) => {
+            icon.classList.toggle("fa-volume-xmark", !soundOn);
+            icon.classList.toggle("fa-volume-high", soundOn);
+        });
+    }
 
+    // Play the video that's on screen, pause the rest
     const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            const video = entry.target.querySelector('video');
+        entries.forEach((entry) => {
+            const video = entry.target.querySelector("video");
+            if (!video) return;
             if (entry.isIntersecting) {
-                if (video) {
-                    video.currentTime = 0; // Restart video when scrolling to it
-                    video.play().catch(e => console.log("Autoplay prevented:", e));
-                }
-            } 
-            else {
-                if (video) {
-                    video.pause();
-                }
+                video.currentTime = 0;
+                tryPlay(video);
+            } else {
+                video.pause();
             }
         });
-    }, observerOptions);
+    }, { root: container, threshold: 0.6 });
 
-    document.querySelectorAll('.video-container').forEach(container => {
-        observer.observe(container);
+    document.querySelectorAll(".video-container").forEach((c) => observer.observe(c));
+
+    // Tap video: play / pause
+    videos.forEach((video) => {
+        video.addEventListener("click", () => {
+            if (video.paused) {
+                tryPlay(video);
+            } else {
+                video.pause();
+                overlayOf(video).classList.remove("hidden");
+            }
+        });
     });
 
-    // Toggle Play/Pause on click
-    videos.forEach(video => {
-        video.addEventListener('click', function() {
-            if (this.paused) {
-                this.play();
-            } else {
-                this.pause();
-            }
+    // Sound toggle (a user tap, so unmuting is allowed)
+    document.querySelectorAll(".mute-toggle").forEach((btn) => {
+        btn.addEventListener("click", () => {
+            soundOn = !soundOn;
+            videos.forEach((v) => { v.muted = !soundOn; });
+            updateMuteButtons();
+            const current = btn.closest(".video-container").querySelector("video");
+            if (current.paused) tryPlay(current);
         });
     });
 });

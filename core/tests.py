@@ -71,6 +71,25 @@ class ViewTests(TestCase):
         self.assertEqual(resp.status_code, 400)
         self.assertFalse(Message.objects.exists())
 
+    def test_spotlight_empty_state(self):
+        with override_settings(MEDIA_ROOT=tempfile.mkdtemp()):
+            self.assertContains(self.client.get("/spotlight/"), "No Spotlight videos yet")
+
+    def test_spotlight_lists_videos_muted_for_autoplay(self):
+        import os
+        media = tempfile.mkdtemp()
+        os.makedirs(os.path.join(media, "stories"))
+        for name in ("b.mp4", "a.MP4", "story.jpg"):
+            open(os.path.join(media, "stories", name), "wb").close()
+        with override_settings(MEDIA_ROOT=media):
+            resp = self.client.get("/spotlight/")
+        self.assertEqual(resp.context["videos"], ["/media/stories/a.MP4", "/media/stories/b.mp4"])
+        import re
+        video_tags = re.findall(r"<video[^>]*>", resp.content.decode())
+        self.assertEqual(len(video_tags), 2)
+        self.assertTrue(all(re.search(r"\bmuted\b", tag) for tag in video_tags))
+        shutil.rmtree(media, ignore_errors=True)
+
     def test_upload_story_valid_and_invalid(self):
         self.assertEqual(self.client.post("/upload-story/", {"image": make_image()}).status_code, 200)
         bad = SimpleUploadedFile("x.jpg", b"not an image", content_type="image/jpeg")

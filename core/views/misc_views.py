@@ -86,7 +86,7 @@ def spotlight_view(request):
     stories_dir = os.path.join(settings.MEDIA_ROOT, 'stories')
     videos = []
     if os.path.exists(stories_dir):
-        videos = [f for f in os.listdir(stories_dir) if f.endswith('.mp4')]
+        videos = sorted(f for f in os.listdir(stories_dir) if f.lower().endswith('.mp4'))
     
     # Return full URL paths
     video_urls = [f"{settings.MEDIA_URL}stories/{v}" for v in videos]
